@@ -68,7 +68,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     return (
         <vstack gap="medium">
             <text size="xxlarge" weight='bold' alignment="center middle">{props.muscle}</text>
-            <hstack cornerRadius='large' height='100%' alignment='middle' grow><image url={props.image} width="300px" height="200px" resizeMode='cover'></image></hstack>
+            <hstack cornerRadius='large' height='100%' alignment='middle' grow><image url={props.image} width="300px" height={String(350 - props.sets.length * 50) + "px"} resizeMode='cover'></image></hstack>
             <text size="xlarge" alignment="center top">{props.name}</text>
             <hstack alignment="center top" gap="small">
               {setNumbers(props.sets)}

@@ -1,13 +1,12 @@
 // Learn more at developers.reddit.com/docs
 import { Devvit, useState } from '@devvit/public-api';
-import { DisabledWeight } from './components/weight.js';
-import { Reps } from './components/reps.js';
 import { RepPicker } from './components/reppicker.js';
-import { SetNumber } from './components/setnumber.js';
 import { Exercise } from './components/exercise.js';
 
 Devvit.configure({
   redditAPI: true,
+  redis: true,
+  media: true,
 });
 
 const muscles = ["Legs", "Abs", "Shoulders", "Forearms", "Back", "Triceps", "Chest", "Biceps"]
@@ -15,6 +14,104 @@ const muscles = ["Legs", "Abs", "Shoulders", "Forearms", "Back", "Triceps", "Che
 const muscleToExercises: Record<string, string[]> = {
   "Legs": ["Weighted Lunge", "Squat", "Hip Thrust", "Donkey Kick", "Calf Raise"],
   "Abs": ["Spiderman Plank Crunch", "Leg Lift", "Jackknife", "Bicycle"]
+}
+
+
+const strongLifts = {
+  muscles: ["Squat", "Bench Press", "Barbell Row"],
+  "Squat": {
+    exercises: ["Squat"],
+    "Squat":
+      [
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+      ],
+  },
+  "Bench Press": {
+    exercises: ["Bench Press"],
+    "Bench Press":
+      [
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+      ],
+    },
+    "Barbell Row": {
+      exercises: ["Barbell Row"],
+        "Barbell Row":
+      [
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+      ],
+  },
 }
 
 const initialData = {
@@ -25,17 +122,17 @@ const initialData = {
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
           weight: 15
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
           weight: 15
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
           weight: 15
         },
       ],
@@ -43,17 +140,17 @@ const initialData = {
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
           weight: 45
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 5,
           weight: 45
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
           weight: 45
         },
       ],
@@ -61,17 +158,17 @@ const initialData = {
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
           weight: 45
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 5,
           weight: 45
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
           weight: 45
         },
       ],
@@ -79,17 +176,17 @@ const initialData = {
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
           weight: 20
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
           weight: 20
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
           weight: 20
         },
       ],
@@ -100,60 +197,60 @@ const initialData = {
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
         },
       ],
       "Leg Lift":
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
         },
       ],
       "Jackknife Crunch":
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
         },
       ],
       "Bicycle":
       [
         {
           reps: 0,
-          target: "Target 10-15",
+          target: 15,
         },
         {
           reps: 0,
-          target: "Target 8-12",
+          target: 12,
         },
         {
           reps: 0,
-          target: "Target 6-10",
+          target: 10,
         },
       ],
   }
@@ -189,11 +286,11 @@ Devvit.addCustomPostType({
   height: 'tall',
   render: (context) => {
     const increment = 2.5
-    const [muscles, setMuscles] = useState(initialData.muscles);
+    const [muscles, setMuscles] = useState(strongLifts.muscles);
     const [muscleIndex, setMuscleIndex] = useState(0)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
-    const [data, setData] = useState(initialData)
+    const [data, setData] = useState(strongLifts)
     const onRepsClick = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
       setRepPicker([muscleIndex, exerciseIndex, setIndex])
     }
@@ -232,7 +329,7 @@ Devvit.addCustomPostType({
               increaseWeightForIndex={increaseWeightForIndices(muscleIndex, exerciseIndex)}
               decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex, exerciseIndex)}/> 
             {context.dimensions!.width > 400 ?
-            <hstack>
+            <hstack alignment="center middle">
               <spacer size="small" />
               <Exercise
                 muscle={muscles[muscleIndex+1]}

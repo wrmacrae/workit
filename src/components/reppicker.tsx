@@ -3,6 +3,7 @@ import { Devvit } from '@devvit/public-api';
 interface RepPickerProps {
     maxWidth: number
     setReps: (reps: number) => void
+    closePicker: () => void
 }
 
 interface RepButtonProps {
@@ -31,11 +32,14 @@ function rowOfButtons(start: number, end: number, setReps: (reps: number) => voi
 }
 
 export const RepPicker = (props: RepPickerProps): JSX.Element => {
-    return (        
-        <vstack height="100%" alignment="center middle">
-            <spacer grow />
-            {gridOfButtons(1, 31, props.maxWidth > 400 ? 10 : 5, props.setReps)}
-            <spacer grow />
-        </vstack>
+    return (
+        <zstack height="100%" width="100%" alignment="center middle">
+            <vstack height="100%" width="100%" onPress={props.closePicker} />
+            <vstack height="100%" alignment="center middle">
+                <spacer grow />
+                {gridOfButtons(1, 31, props.maxWidth > 400 ? 10 : 5, props.setReps)}
+                <spacer grow />
+            </vstack>
+        </zstack>
     )
 }

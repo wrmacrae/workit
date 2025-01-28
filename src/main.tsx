@@ -218,11 +218,11 @@ Devvit.addCustomPostType({
     }
 
     return (
-      <zstack alignment="center middle">
-        <vstack height="100%" width="100%"gap="small" alignment="center middle">
-          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - 1)}/> : <hstack />}
+      <zstack height="100%" width="100%" alignment="center middle">
+        <vstack gap="small" alignment="center middle">
+          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - 1)}/> : <spacer size="medium"/>}
           <hstack height="100%" width="100%" alignment="center middle">
-            {muscleIndex > 0 ? <icon name="caret-left" onPress={() => setMuscleIndex(muscleIndex - 1)}/> : <hstack />}
+            {muscleIndex > 0 ? <icon name="caret-left" onPress={() => setMuscleIndex(muscleIndex - 1)}/> : <spacer size="medium"/>}
             <Exercise
               muscle={muscles[muscleIndex]}
               name={data[muscles[muscleIndex]]["exercises"][exerciseIndex]}
@@ -242,13 +242,13 @@ Devvit.addCustomPostType({
                 onRepsClick={onRepsClick(muscleIndex+1, exerciseIndex)}
                 increaseWeightForIndex={increaseWeightForIndices(muscleIndex+1, exerciseIndex)}
                 decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex+1, exerciseIndex)}/> 
-              {muscleIndex + 2 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <hstack />}
+              {muscleIndex + 2 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <spacer size="medium"/>}
             </hstack>
-            : muscleIndex + 1 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <hstack />}
+            : muscleIndex + 1 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <spacer size="medium"/>}
           </hstack>
-          {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : <hstack />}
+          {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : <spacer size="medium"/>}
         </vstack>
-        {repPicker.length > 2 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)}></RepPicker> : <vstack />}
+        {repPicker.length > 2 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
       </zstack>
     );
   },

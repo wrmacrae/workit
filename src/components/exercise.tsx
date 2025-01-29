@@ -9,7 +9,7 @@ interface ExerciseProps {
     image: string
     sets: JSONArray
     onRepsClick: (setIndex: number) => void
-    increaseWeightForIndex: (setIndex: number) => void
+    increaseWeightForIndex: (setIndex: number) => Promise<void>
     decreaseWeightForIndex: (setIndex: number) => void
 }
 
@@ -48,11 +48,11 @@ function xs(sets: JSONArray) {
     )
 }
 
-function weights(sets: JSONArray, increaseWeightForIndex: (setIndex: number) => void, decreaseWeightForIndex: (setIndex: number) => void) {
+function weights(sets: JSONArray, increaseWeightForIndex: (setIndex: number) => Promise<void>, decreaseWeightForIndex: (setIndex: number) => void) {
     var weights = []
     for (let i = 0; i < sets.length; i++)  {
         if (sets[i].weight != undefined) {
-            weights.push(<Weight weight={sets[i].weight} increaseWeight={() => increaseWeightForIndex(i)} decreaseWeight={() => decreaseWeightForIndex(i)}/>)
+            weights.push(<Weight weight={sets[i].weight} increaseWeight={async () => increaseWeightForIndex(i)} decreaseWeight={() => decreaseWeightForIndex(i)}/>)
         } else {
             weights.push(<DisabledWeight />)
         }

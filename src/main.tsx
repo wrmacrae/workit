@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, useState } from '@devvit/public-api';
+import { Devvit, useAsync, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
 import { Exercise } from './components/exercise.js';
 
@@ -16,6 +16,9 @@ const muscleToExercises: Record<string, string[]> = {
   "Abs": ["Spiderman Plank Crunch", "Leg Lift", "Jackknife", "Bicycle"]
 }
 
+function key(postId: string, userId: string) {
+  return `post-{postId}-user-{userId}`
+}
 
 const strongLifts = {
   muscles: ["Squat", "Bench Press", "Barbell Row"],
@@ -291,6 +294,24 @@ Devvit.addCustomPostType({
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
     const [data, setData] = useState(strongLifts)
+    const asyncResult = useAsync(async () => {
+      return await context.redis.get(key(context.postId!, context.userId!));
+    }, {
+      depends: [context.postId, context.userId],
+      finally: (loadedData, error) => {
+        if (loadedData) {
+          const parsedData = JSON.parse(loadedData.toString())
+          setData(parsedData)
+          setMuscles(parsedData.muscles)
+        }
+      }
+    });
+    if (asyncResult.loading) {
+      return <text>Loading...</text>;
+    }
+    if (asyncResult.error) {
+      return <text>Error: {asyncResult.error.message}</text>;
+    }
     const onRepsClick = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
       setRepPicker([muscleIndex, exerciseIndex, setIndex])
     }
@@ -300,18 +321,21 @@ Devvit.addCustomPostType({
       data[muscle][exercise][indices[2]].reps = reps
       setData(data)
       setRepPicker([])
+      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
     }
-    const increaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
+    const increaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => async (setIndex: number) => {
       const muscle = data.muscles[muscleIndex]
       const exercise = data[muscle].exercises[exerciseIndex]
       data[muscle][exercise][setIndex].weight += increment
       setData(data)
+      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
     }
     const decreaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
       const muscle = data.muscles[muscleIndex]
       const exercise = data[muscle].exercises[exerciseIndex]
       data[muscle][exercise][setIndex].weight -= increment
       setData(data)
+      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
     }
 
     return (

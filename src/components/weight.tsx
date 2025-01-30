@@ -2,7 +2,7 @@ import { Devvit } from '@devvit/public-api';
 
 interface WeightProps {
     weight: number
-    increaseWeight: () => Promise<void>
+    increaseWeight: () => void
     decreaseWeight: () => void
 }
 

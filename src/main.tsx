@@ -21,6 +21,7 @@ function key(postId: string, userId: string) {
 }
 
 const strongLifts = {
+  complete: false,
   muscles: ["Squat", "Bench Press", "Barbell Row"],
   "Squat": {
     exercises: ["Squat"],
@@ -118,6 +119,7 @@ const strongLifts = {
 }
 
 const initialData = {
+  complete: false,
   muscles: ["Legs", "Abs"],
   "Legs": {
     exercises: ["Weighted Lunge", "Squat", "Hip Thrust", "Calf Raise"],
@@ -259,6 +261,36 @@ const initialData = {
   }
 }
 
+function allSetsDone(data) {
+  for (const muscle of data.muscles) {
+    for (const exercise of data[muscle].exercises) {
+      if (!data[muscle][exercise].every((set) => set.reps > 0)) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
+function formatDataAsComment(data) {
+  var comment = ""
+  for (const muscle of data.muscles) {
+    comment += `**${muscle}**\n\n`
+    for (const exercise of data[muscle].exercises) {
+      comment += `${exercise}:\n\n`
+      const setsAsStrings = data[muscle][exercise].map((set) => `${set.reps} at ${set.weight}`)
+      if (new Set(setsAsStrings).size == 1)
+      {
+        comment += `${data[muscle][exercise].length}x${setsAsStrings[0]}`
+      } else {
+        comment += setsAsStrings.join(", ")
+      }
+    }
+    comment += `\n\n`
+  }
+  return comment
+}
+
 // Add a menu item to the subreddit menu for instantiating the new experience post
 Devvit.addMenuItem({
   label: 'Add my post',
@@ -294,6 +326,20 @@ Devvit.addCustomPostType({
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
     const [data, setData] = useState(strongLifts)
+    const [pendingUpdates, setPendingUpdates] = useState([]);
+    const { error } = useAsync(async () => {
+      if (pendingUpdates.length > 0) {
+        const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
+        await context.redis.set(key(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        setPendingUpdates([]);
+      }
+    }, {
+      depends: [pendingUpdates],
+    });
+    
+    if (error) {
+      console.error('Failed to save to Redis:', error);
+    }
     const asyncResult = useAsync(async () => {
       return await context.redis.get(key(context.postId!, context.userId!));
     }, {
@@ -316,26 +362,37 @@ Devvit.addCustomPostType({
       setRepPicker([muscleIndex, exerciseIndex, setIndex])
     }
     const setRepsForIndices = (indices: number[]) => (reps: number) => {
-      const muscle = data.muscles[indices[0]]
-      const exercise = data[muscle].exercises[indices[1]]
-      data[muscle][exercise][indices[2]].reps = reps
-      setData(data)
+      const newData = JSON.parse(JSON.stringify(data))
+      const muscle = newData.muscles[indices[0]]
+      const exercise = newData[muscle].exercises[indices[1]]
+      newData[muscle][exercise][indices[2]].reps = reps
+      setData(newData)
       setRepPicker([])
-      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
-    }
-    const increaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => async (setIndex: number) => {
-      const muscle = data.muscles[muscleIndex]
-      const exercise = data[muscle].exercises[exerciseIndex]
-      data[muscle][exercise][setIndex].weight += increment
-      setData(data)
-      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
+      setPendingUpdates(prev => [...prev, newData]);
+
+    };
+    const increaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
+      const newData = JSON.parse(JSON.stringify(data))
+      const muscle = newData.muscles[muscleIndex]
+      const exercise = newData[muscle].exercises[exerciseIndex]
+      newData[muscle][exercise][setIndex].weight += increment
+      setData(newData)
+      setPendingUpdates(prev => [...prev, newData]);
     }
     const decreaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
-      const muscle = data.muscles[muscleIndex]
-      const exercise = data[muscle].exercises[exerciseIndex]
-      data[muscle][exercise][setIndex].weight -= increment
-      setData(data)
-      context.redis.set(key(context.postId!, context.userId!), JSON.stringify(data))
+      const newData = JSON.parse(JSON.stringify(data))
+      const muscle = newData.muscles[muscleIndex]
+      const exercise = newData[muscle].exercises[exerciseIndex]
+      newData[muscle][exercise][setIndex].weight -= increment
+      setData(newData)
+      setPendingUpdates(prev => [...prev, newData]);
+    }
+    const completeWorkout = () => {
+      const newData = JSON.parse(JSON.stringify(data))
+      newData.complete = true
+      setData(newData)
+      setPendingUpdates(prev => [...prev, newData]);
+      context.reddit.submitComment({id: context.postId!, text: formatDataAsComment(data) })
     }
 
     return (
@@ -367,7 +424,7 @@ Devvit.addCustomPostType({
             </hstack>
             : muscleIndex + 1 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <spacer size="medium"/>}
           </hstack>
-          {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : <spacer size="medium"/>}
+          {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : allSetsDone(data) && !data.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
         </vstack>
         {repPicker.length > 2 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
       </zstack>

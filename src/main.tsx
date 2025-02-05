@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, useAsync, useState } from '@devvit/public-api';
+import { Devvit, JSONObject, RedditAPIClient, RedisClient, useAsync, useForm, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
 import { Exercise } from './components/exercise.js';
 
@@ -10,14 +10,20 @@ Devvit.configure({
 });
 
 const muscles = ["Legs", "Abs", "Shoulders", "Forearms", "Back", "Triceps", "Chest", "Biceps"]
+// const muscleOptions = muscles.map((muscle: string) => { label: muscle, value: muscle })
+// const exercisesOptions = Array(5).map((_, i) => { label: i+1, value: i+1 }})
 
 const muscleToExercises: Record<string, string[]> = {
   "Legs": ["Weighted Lunge", "Squat", "Hip Thrust", "Donkey Kick", "Calf Raise"],
   "Abs": ["Spiderman Plank Crunch", "Leg Lift", "Jackknife", "Bicycle"]
 }
 
-function key(postId: string, userId: string) {
-  return `post-{postId}-user-{userId}`
+function keyForPostAndUser(postId: string, userId: string) {
+  return `post-${postId}-user-${userId}`
+}
+
+function keyForPost(postId: string) {
+  return `post-${postId}`
 }
 
 const strongLifts = {
@@ -25,38 +31,8 @@ const strongLifts = {
   muscles: ["Squat", "Bench Press", "Barbell Row"],
   "Squat": {
     exercises: ["Squat"],
-    "Squat":
-      [
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-      ],
-  },
-  "Bench Press": {
-    exercises: ["Bench Press"],
-    "Bench Press":
+    "Squat": {
+      sets:
       [
         {
           reps: 0,
@@ -85,9 +61,11 @@ const strongLifts = {
         },
       ],
     },
-    "Barbell Row": {
-      exercises: ["Barbell Row"],
-        "Barbell Row":
+  },
+  "Bench Press": {
+    exercises: ["Bench Press"],
+    "Bench Press": {
+      sets:
       [
         {
           reps: 0,
@@ -115,6 +93,40 @@ const strongLifts = {
           weight: 45
         },
       ],
+      },
+  },
+  "Barbell Row": {
+    exercises: ["Barbell Row"],
+    "Barbell Row": {
+      sets:
+      [
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+        {
+          reps: 0,
+          target: 5,
+          weight: 45
+        },
+      ],
+    },
   },
 }
 
@@ -123,7 +135,8 @@ const initialData = {
   muscles: ["Legs", "Abs"],
   "Legs": {
     exercises: ["Weighted Lunge", "Squat", "Hip Thrust", "Calf Raise"],
-    "Weighted Lunge":
+    "Weighted Lunge": {
+      sets:
       [
         {
           reps: 0,
@@ -141,7 +154,9 @@ const initialData = {
           weight: 15
         },
       ],
-      "Squat":
+    },
+    "Squat": {
+      sets:
       [
         {
           reps: 0,
@@ -159,7 +174,9 @@ const initialData = {
           weight: 45
         },
       ],
-      "Hip Thrust":
+    },
+    "Hip Thrust": {
+      sets:
       [
         {
           reps: 0,
@@ -177,7 +194,9 @@ const initialData = {
           weight: 45
         },
       ],
-      "Calf Raise":
+    },
+    "Calf Raise": {
+      sets:
       [
         {
           reps: 0,
@@ -195,10 +214,12 @@ const initialData = {
           weight: 20
         },
       ],
+    },
   },
   "Abs": {
     exercises: ["Spiderman Plank Crunch", "Leg Lift", "Jackknife Crunch", "Bicycle"],
-    "Spiderman Plank Crunch":
+    "Spiderman Plank Crunch": {
+      sets:
       [
         {
           reps: 0,
@@ -213,7 +234,9 @@ const initialData = {
           target: 10,
         },
       ],
-      "Leg Lift":
+    },
+    "Leg Lift": {
+      sets:
       [
         {
           reps: 0,
@@ -228,7 +251,9 @@ const initialData = {
           target: 10,
         },
       ],
-      "Jackknife Crunch":
+    },
+    "Jackknife Crunch": {
+      sets:
       [
         {
           reps: 0,
@@ -243,7 +268,9 @@ const initialData = {
           target: 10,
         },
       ],
-      "Bicycle":
+    },
+    "Bicycle": {
+      sets:
       [
         {
           reps: 0,
@@ -258,13 +285,14 @@ const initialData = {
           target: 10,
         },
       ],
+    },
   }
 }
 
 function allSetsDone(data) {
   for (const muscle of data.muscles) {
     for (const exercise of data[muscle].exercises) {
-      if (!data[muscle][exercise].every((set) => set.reps > 0)) {
+      if (!data[muscle][exercise].sets.every((set) => set.reps > 0)) {
         return false
       }
     }
@@ -278,10 +306,10 @@ function formatDataAsComment(data) {
     comment += `**${muscle}**\n\n`
     for (const exercise of data[muscle].exercises) {
       comment += `${exercise}:\n\n`
-      const setsAsStrings = data[muscle][exercise].map((set) => `${set.reps} at ${set.weight}`)
+      const setsAsStrings = data[muscle][exercise].sets.map((set) => `${set.reps} at ${set.weight}`)
       if (new Set(setsAsStrings).size == 1)
       {
-        comment += `${data[muscle][exercise].length}x${setsAsStrings[0]}`
+        comment += `${data[muscle][exercise].sets.length}x${setsAsStrings[0]}`
       } else {
         comment += setsAsStrings.join(", ")
       }
@@ -291,57 +319,65 @@ function formatDataAsComment(data) {
   return comment
 }
 
-// Add a menu item to the subreddit menu for instantiating the new experience post
+async function makeWorkitPost(context: Devvit.Context, title: string, workout: JSONObject) {
+  context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
+  const subredditName = (await context.reddit.getCurrentSubreddit()).name
+  const post = await context.reddit.submitPost({
+    title: title,
+    subredditName: subredditName,
+    preview: (
+      <vstack>
+        <text color="black white">Loading brand new post...</text>
+      </vstack>
+    ),
+  });
+  await context.redis.set(keyForPost(post.id), JSON.stringify(workout));
+  context.ui.navigateTo(post)
+}
+
 Devvit.addMenuItem({
-  label: 'Add my post',
+  label: 'New Strong Lifts',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
-    ui.showToast("Submitting your post - upon completion you'll navigate there.");
-
     const subreddit = await reddit.getCurrentSubreddit();
-    const post = await reddit.submitPost({
-      title: 'My devvit post',
-      subredditName: subreddit.name,
-      // The preview appears while the post loads
-      preview: (
-        <vstack height="100%" width="100%" alignment="middle center">
-          <text size="large">Loading ...</text>
-        </vstack>
-      ),
-    });
-    ui.navigateTo(post);
+    const post = await makeWorkitPost(context, "Strong Lifts Day 1", strongLifts)
   },
 });
 
-// Add a post type definition
 Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
     const increment = 2.5
-    const [muscles, setMuscles] = useState(strongLifts.muscles);
+    const [muscles, setMuscles] = useState([]);
     const [muscleIndex, setMuscleIndex] = useState(0)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
-    const [data, setData] = useState(strongLifts)
+    const [showMenu, setShowMenu] = useState(false)
+    const [data, setData] = useState({})
     const [pendingUpdates, setPendingUpdates] = useState([]);
     const { error } = useAsync(async () => {
       if (pendingUpdates.length > 0) {
         const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
-        await context.redis.set(key(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        await context.redis.set(keyForPostAndUser(context.postId!, context.userId!), JSON.stringify(latestUpdate));
         setPendingUpdates([]);
       }
     }, {
       depends: [pendingUpdates],
     });
-    
     if (error) {
       console.error('Failed to save to Redis:', error);
     }
+
     const asyncResult = useAsync(async () => {
-      return await context.redis.get(key(context.postId!, context.userId!));
+      var startedWorkout = await context.redis.get(keyForPostAndUser(context.postId!, context.userId!)) // User started a workout already
+      if (startedWorkout == undefined) {
+        return await context.redis.get(keyForPost(context.postId!)) // Load the workout template
+      } else {
+        return startedWorkout;
+      }
     }, {
       depends: [context.postId, context.userId],
       finally: (loadedData, error) => {
@@ -353,11 +389,115 @@ Devvit.addCustomPostType({
       }
     });
     if (asyncResult.loading) {
-      return <text>Loading...</text>;
+
+      return <text>Loading from Redis...</text>;
     }
     if (asyncResult.error) {
       return <text>Error: {asyncResult.error.message}</text>;
     }
+    // const musclesForm = useForm(
+    //   {
+    //     fields: [
+    //       {
+    //         type: 'select',
+    //         name: 'first',
+    //         label: 'First Muscle',
+    //         required: true,
+    //         options: muscleOptions,
+    //       },
+    //       {
+    //         type: 'select',
+    //         name: 'second',
+    //         label: 'Second Muscle',
+    //         required: true,
+    //         options: muscleOptions,
+    //       },
+    //       {
+    //         type: 'select',
+    //         name: 'first',
+    //         label: 'Third Muscle',
+    //         required: true,
+    //         options: muscleOptions,
+    //       },
+    //       {
+    //         type: 'select',
+    //         name: 'exercises',
+    //         label: "Exercises per Muscle",
+    //         required: true,
+    //       }
+    //     ]
+    //   }
+    // )
+    const postForm = useForm(
+      {
+        fields: [
+          {
+            type: 'string',
+            name: 'title',
+            label: 'Workout Title',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'muscle',
+            label: 'First Muscle',
+            // required: false,
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'exercise',
+            label: 'First Exercise Name',
+            // required: false,
+            required: true,
+          },
+          {
+            type: 'image',
+            name: 'picture',
+            label: 'First Exercise Image',
+            // required: false,
+            required: true,
+          },
+          {
+            type: 'number',
+            name: 'sets',
+            label: 'Number of Sets',
+            // required: false,
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'reps',
+            label: 'Reps per set (or comma-separated list of reps)',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'weight',
+            label: 'Weight per set (or comma-separated list of weights',
+            // required: false,
+            required: true,
+          },
+         ],
+         title: 'Create a New Workout',
+         acceptLabel: 'Post',
+      }, async (values) => {
+      const { title, muscle, exercise, picture, sets, reps, weight } = values
+      const response = await context.media.upload({
+        url: picture,
+        type: 'image',
+      })
+      //TODO add picture url to data somehow
+      var newWorkout = {
+        complete: false,
+        author: context.userId!,
+        muscles: [muscle]
+      }
+      newWorkout[muscle] = {"exercises" : [exercise]}
+      newWorkout[muscle][exercise] = {sets: Array(sets).fill({ reps: 0, target: Number(reps), weight: Number(weight) }), picture: response.mediaId}   
+      await makeWorkitPost(context, title, newWorkout)
+    }
+    );
     const onRepsClick = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
       setRepPicker([muscleIndex, exerciseIndex, setIndex])
     }
@@ -365,7 +505,7 @@ Devvit.addCustomPostType({
       const newData = JSON.parse(JSON.stringify(data))
       const muscle = newData.muscles[indices[0]]
       const exercise = newData[muscle].exercises[indices[1]]
-      newData[muscle][exercise][indices[2]].reps = reps
+      newData[muscle][exercise].sets[indices[2]].reps = reps
       setData(newData)
       setRepPicker([])
       setPendingUpdates(prev => [...prev, newData]);
@@ -375,7 +515,7 @@ Devvit.addCustomPostType({
       const newData = JSON.parse(JSON.stringify(data))
       const muscle = newData.muscles[muscleIndex]
       const exercise = newData[muscle].exercises[exerciseIndex]
-      newData[muscle][exercise][setIndex].weight += increment
+      newData[muscle][exercise].sets[setIndex].weight += increment
       setData(newData)
       setPendingUpdates(prev => [...prev, newData]);
     }
@@ -383,7 +523,7 @@ Devvit.addCustomPostType({
       const newData = JSON.parse(JSON.stringify(data))
       const muscle = newData.muscles[muscleIndex]
       const exercise = newData[muscle].exercises[exerciseIndex]
-      newData[muscle][exercise][setIndex].weight -= increment
+      newData[muscle][exercise].sets[setIndex].weight -= increment
       setData(newData)
       setPendingUpdates(prev => [...prev, newData]);
     }
@@ -396,8 +536,8 @@ Devvit.addCustomPostType({
     }
 
     return (
-      <zstack height="100%" width="100%" alignment="center middle">
-        <vstack gap="small" alignment="center middle">
+      <zstack height="100%" width="100%" alignment="start top">
+        <vstack height="100%" width="100%" gap="small" alignment="center middle">
           {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - 1)}/> : <spacer size="medium"/>}
           <hstack height="100%" width="100%" alignment="center middle">
             {muscleIndex > 0 ? <icon name="caret-left" onPress={() => setMuscleIndex(muscleIndex - 1)}/> : <spacer size="medium"/>}
@@ -405,18 +545,18 @@ Devvit.addCustomPostType({
               muscle={muscles[muscleIndex]}
               name={data[muscles[muscleIndex]]["exercises"][exerciseIndex]}
               image={data[muscles[muscleIndex]]["exercises"][exerciseIndex].toLowerCase().replaceAll(" ", "") + ".gif"}
-              sets={data[muscles[muscleIndex]][data[muscles[muscleIndex]]["exercises"][exerciseIndex]]}
+              sets={data[muscles[muscleIndex]][data[muscles[muscleIndex]]["exercises"][exerciseIndex]].sets}
               onRepsClick={onRepsClick(muscleIndex, exerciseIndex)}
               increaseWeightForIndex={increaseWeightForIndices(muscleIndex, exerciseIndex)}
               decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex, exerciseIndex)}/> 
-            {context.dimensions!.width > 400 ?
+            {context.dimensions!.width > 400 && muscleIndex + 1 < muscles.length ?
             <hstack alignment="center middle">
               <spacer size="small" />
               <Exercise
                 muscle={muscles[muscleIndex+1]}
                 name={data[muscles[muscleIndex+1]]["exercises"][exerciseIndex]}
-                image={data[muscles[muscleIndex+1]]["exercises"][exerciseIndex].toLowerCase().replaceAll(" ", "") + ".gif"}
-                sets={data[muscles[muscleIndex+1]][data[muscles[muscleIndex+1]]["exercises"][exerciseIndex]]}
+                image={data[muscles[muscleIndex+1]]["exercises"][exerciseIndex].picture ?? data[muscles[muscleIndex+1]]["exercises"][exerciseIndex].toLowerCase().replaceAll(" ", "") + ".gif"}
+                sets={data[muscles[muscleIndex+1]][data[muscles[muscleIndex+1]]["exercises"][exerciseIndex]].sets}
                 onRepsClick={onRepsClick(muscleIndex+1, exerciseIndex)}
                 increaseWeightForIndex={increaseWeightForIndices(muscleIndex+1, exerciseIndex)}
                 decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex+1, exerciseIndex)}/> 
@@ -427,6 +567,19 @@ Devvit.addCustomPostType({
           {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : allSetsDone(data) && !data.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
         </vstack>
         {repPicker.length > 2 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
+        {showMenu ?
+        <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
+        <vstack/> }
+        <vstack padding='small'>
+          <button appearance="bordered" onPress={() => setShowMenu(!showMenu)} icon={showMenu ? "close" : "menu-fill"}></button>
+          {showMenu ?
+            <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
+              <hstack padding="small" onPress={() => context.ui.showForm(postForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New</text><spacer/></hstack>
+              <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack>
+              <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
+            </vstack>
+           : <vstack/> }
+        </vstack>
       </zstack>
     );
   },

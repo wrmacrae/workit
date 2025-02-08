@@ -9,15 +9,6 @@ Devvit.configure({
   media: true,
 });
 
-const muscles = ["Legs", "Abs", "Shoulders", "Forearms", "Back", "Triceps", "Chest", "Biceps"]
-// const muscleOptions = muscles.map((muscle: string) => { label: muscle, value: muscle })
-// const exercisesOptions = Array(5).map((_, i) => { label: i+1, value: i+1 }})
-
-const muscleToExercises: Record<string, string[]> = {
-  "Legs": ["Weighted Lunge", "Squat", "Hip Thrust", "Donkey Kick", "Calf Raise"],
-  "Abs": ["Spiderman Plank Crunch", "Leg Lift", "Jackknife", "Bicycle"]
-}
-
 function keyForPostAndUser(postId: string, userId: string) {
   return `post-${postId}-user-${userId}`
 }
@@ -26,199 +17,161 @@ function keyForPost(postId: string) {
   return `post-${postId}`
 }
 
-const strongLifts = {
-  complete: false,
-  muscles: ["Squat", "Bench Press", "Barbell Row"],
-  "Squat": {
-    exercises: ["Squat"],
-    "Squat": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-      ],
-    },
-  },
-  "Bench Press": {
-    exercises: ["Bench Press"],
-    "Bench Press": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-      ],
-      },
-  },
-  "Barbell Row": {
-    exercises: ["Barbell Row"],
-    "Barbell Row": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-        {
-          reps: 0,
-          target: 5,
-          weight: 45
-        },
-      ],
-    },
-  },
+function makeWorkoutFromTemplat(templateWorkout: JSONObject) {
+  templateWorkout.complete = false
+  return templateWorkout
 }
 
-const initialData = {
-  complete: false,
-  muscles: ["Legs", "Abs"],
-  "Legs": {
-    exercises: ["Weighted Lunge", "Squat", "Hip Thrust", "Calf Raise"],
-    "Weighted Lunge": {
+const strongLifts = {
+  exercises: [
+    {
+      name: "Squat",
+      image: "squat.gif",
       sets:
       [
         {
-          reps: 0,
-          target: 15,
-          weight: 15
-        },
-        {
-          reps: 0,
-          target: 12,
-          weight: 15
-        },
-        {
-          reps: 0,
-          target: 10,
-          weight: 15
-        },
-      ],
-    },
-    "Squat": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 15,
-          weight: 45
-        },
-        {
-          reps: 0,
           target: 5,
           weight: 45
         },
         {
-          reps: 0,
-          target: 10,
-          weight: 45
-        },
-      ],
-    },
-    "Hip Thrust": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 15,
-          weight: 45
-        },
-        {
-          reps: 0,
           target: 5,
           weight: 45
         },
         {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+      ],      
+    },
+    {
+      name: "Bench Press",
+      image: "benchpress.gif",
+      sets:
+      [
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+      ],      
+    },
+    {
+      name: "Barbell Row",
+      image: "barbellrow.gif",
+      sets:
+      [
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+        {
+          target: 5,
+          weight: 45
+        },
+      ],      
+    },
+  ]
+}
+
+const supersetsWorkout = {
+  exercises: [
+    {
+      name: "Weighted Lunge",
+      image: "weightedlunge.gif",
+      superset: true,
+      sets:
+      [
+        {
+          target: 15,
+          weight: 15
+        },
+        {
+          target: 12,
+          weight: 15
+        },
+        {
+          target: 10,
+          weight: 15
+        },
+      ],
+    },
+    {
+      name: "Spiderman Plank Crunch",
+      image: "spidermanplankcrunch.gif",
+      sets:
+      [
+        {
           reps: 0,
+          target: 15,
+        },
+        {
+          reps: 0,
+          target: 15,
+        },
+        {
+          reps: 0,
+          target: 15,
+        },
+      ],
+    },
+    {
+      name: "Squat",
+      image: "squat.gif",
+      superset: true,
+      sets:
+      [
+        {
+          target: 15,
+          weight: 45
+        },
+        {
+          target: 12,
+          weight: 45
+        },
+        {
           target: 10,
           weight: 45
         },
       ],
     },
-    "Calf Raise": {
-      sets:
-      [
-        {
-          reps: 0,
-          target: 15,
-          weight: 20
-        },
-        {
-          reps: 0,
-          target: 12,
-          weight: 20
-        },
-        {
-          reps: 0,
-          target: 10,
-          weight: 20
-        },
-      ],
-    },
-  },
-  "Abs": {
-    exercises: ["Spiderman Plank Crunch", "Leg Lift", "Jackknife Crunch", "Bicycle"],
-    "Spiderman Plank Crunch": {
+    {
+      name: "Leg Lift",
+      image: "leglift.gif",
       sets:
       [
         {
@@ -227,15 +180,37 @@ const initialData = {
         },
         {
           reps: 0,
-          target: 12,
+          target: 15,
         },
         {
           reps: 0,
-          target: 10,
+          target: 15,
         },
       ],
     },
-    "Leg Lift": {
+    {
+      name: "Hip Thrust",
+      image: "hipthrust.gif",
+      superset: true,
+      sets:
+      [
+        {
+          target: 15,
+          weight: 45
+        },
+        {
+          target: 12,
+          weight: 45
+        },
+        {
+          target: 10,
+          weight: 45
+        },
+      ],
+    },
+    {
+      name: "Jackknife Crunch",
+      image: "jackknifecrunch.gif",
       sets:
       [
         {
@@ -244,15 +219,36 @@ const initialData = {
         },
         {
           reps: 0,
-          target: 12,
+          target: 15,
         },
         {
           reps: 0,
+          target: 15,
+        },
+      ],
+    },    {
+      name: "Calf Raise",
+      image: "calfraise.gif",
+      superset: true,
+      sets:
+      [
+        {
+          target: 15,
+          weight: 45
+        },
+        {
+          target: 12,
+          weight: 45
+        },
+        {
           target: 10,
+          weight: 45
         },
       ],
     },
-    "Jackknife Crunch": {
+    {
+      name: "Bicycle",
+      image: "bicycle.gif",
       sets:
       [
         {
@@ -261,40 +257,21 @@ const initialData = {
         },
         {
           reps: 0,
-          target: 12,
-        },
-        {
-          reps: 0,
-          target: 10,
-        },
-      ],
-    },
-    "Bicycle": {
-      sets:
-      [
-        {
-          reps: 0,
           target: 15,
         },
         {
           reps: 0,
-          target: 12,
-        },
-        {
-          reps: 0,
-          target: 10,
+          target: 15,
         },
       ],
     },
-  }
+  ]
 }
 
 function allSetsDone(data) {
-  for (const muscle of data.muscles) {
-    for (const exercise of data[muscle].exercises) {
-      if (!data[muscle][exercise].sets.every((set) => set.reps > 0)) {
-        return false
-      }
+  for (const exercise of data.exercises) {
+    if (!exercise.sets.every((set) => set.reps > 0)) {
+      return false
     }
   }
   return true
@@ -302,24 +279,21 @@ function allSetsDone(data) {
 
 function formatDataAsComment(data) {
   var comment = ""
-  for (const muscle of data.muscles) {
-    comment += `**${muscle}**\n\n`
-    for (const exercise of data[muscle].exercises) {
-      comment += `${exercise}:\n\n`
-      const setsAsStrings = data[muscle][exercise].sets.map((set) => `${set.reps} at ${set.weight}`)
-      if (new Set(setsAsStrings).size == 1)
-      {
-        comment += `${data[muscle][exercise].sets.length}x${setsAsStrings[0]}`
-      } else {
-        comment += setsAsStrings.join(", ")
-      }
+  for (const exercise of data.exercises) {
+    comment += `${exercise}:\n\n`
+    const setsAsStrings = exercise.sets.map((set) => `${set.reps} at ${set.weight}`)
+    if (new Set(setsAsStrings).size == 1)
+    {
+      comment += `${exercise.sets.length}x${setsAsStrings[0]}`
+    } else {
+      comment += setsAsStrings.join(", ")
     }
-    comment += `\n\n`
   }
   return comment
 }
 
 async function makeWorkitPost(context: Devvit.Context, title: string, workout: JSONObject) {
+  workout.author = context.userId!
   context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
   const post = await context.reddit.submitPost({
@@ -346,22 +320,40 @@ Devvit.addMenuItem({
   },
 });
 
+Devvit.addMenuItem({
+  label: 'New Supersets Workout',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await makeWorkitPost(context, "Legs and Abs", supersetsWorkout)
+  },
+});
+
+function showSupersets(context: Devvit.Context, data: {}, exerciseIndex: number) {
+  return exerciseIndex >= 0 && data.exercises.length > exerciseIndex + 1 && context.dimensions!.width > 400 && data.exercises[exerciseIndex].superset;
+}
+
 Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
     const increment = 2.5
-    const [muscles, setMuscles] = useState([]);
-    const [muscleIndex, setMuscleIndex] = useState(0)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
     const [showMenu, setShowMenu] = useState(false)
     const [data, setData] = useState({})
     const [pendingUpdates, setPendingUpdates] = useState([]);
+    const [editMode, setEditMode] = useState(false)
     const { error } = useAsync(async () => {
       if (pendingUpdates.length > 0) {
         const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
-        await context.redis.set(keyForPostAndUser(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        if (JSON.stringify(latestUpdate) == "{}" ) {
+          await context.redis.del(keyForPostAndUser(context.postId!, context.userId!))
+        } else {
+          await context.redis.set(keyForPostAndUser(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        }
         setPendingUpdates([]);
       }
     }, {
@@ -374,17 +366,15 @@ Devvit.addCustomPostType({
     const asyncResult = useAsync(async () => {
       var startedWorkout = await context.redis.get(keyForPostAndUser(context.postId!, context.userId!)) // User started a workout already
       if (startedWorkout == undefined) {
-        return await context.redis.get(keyForPost(context.postId!)) // Load the workout template
+        return makeWorkoutFromTemplat(JSON.parse(await context.redis.get(keyForPost(context.postId!)))) // Load the workout template
       } else {
-        return startedWorkout;
+        return JSON.parse(startedWorkout);
       }
     }, {
       depends: [context.postId, context.userId],
       finally: (loadedData, error) => {
         if (loadedData) {
-          const parsedData = JSON.parse(loadedData.toString())
-          setData(parsedData)
-          setMuscles(parsedData.muscles)
+          setData(loadedData)
         }
       }
     });
@@ -395,39 +385,6 @@ Devvit.addCustomPostType({
     if (asyncResult.error) {
       return <text>Error: {asyncResult.error.message}</text>;
     }
-    // const musclesForm = useForm(
-    //   {
-    //     fields: [
-    //       {
-    //         type: 'select',
-    //         name: 'first',
-    //         label: 'First Muscle',
-    //         required: true,
-    //         options: muscleOptions,
-    //       },
-    //       {
-    //         type: 'select',
-    //         name: 'second',
-    //         label: 'Second Muscle',
-    //         required: true,
-    //         options: muscleOptions,
-    //       },
-    //       {
-    //         type: 'select',
-    //         name: 'first',
-    //         label: 'Third Muscle',
-    //         required: true,
-    //         options: muscleOptions,
-    //       },
-    //       {
-    //         type: 'select',
-    //         name: 'exercises',
-    //         label: "Exercises per Muscle",
-    //         required: true,
-    //       }
-    //     ]
-    //   }
-    // )
     const postForm = useForm(
       {
         fields: [
@@ -439,13 +396,6 @@ Devvit.addCustomPostType({
           },
           {
             type: 'string',
-            name: 'muscle',
-            label: 'First Muscle',
-            // required: false,
-            required: true,
-          },
-          {
-            type: 'string',
             name: 'exercise',
             label: 'First Exercise Name',
             // required: false,
@@ -453,7 +403,7 @@ Devvit.addCustomPostType({
           },
           {
             type: 'image',
-            name: 'picture',
+            name: 'image',
             label: 'First Exercise Image',
             // required: false,
             required: true,
@@ -482,50 +432,66 @@ Devvit.addCustomPostType({
          title: 'Create a New Workout',
          acceptLabel: 'Post',
       }, async (values) => {
-      const { title, muscle, exercise, picture, sets, reps, weight } = values
+      const { title, exercise, image, sets, reps, weight } = values
       const response = await context.media.upload({
-        url: picture,
+        url: image,
         type: 'image',
       })
-      //TODO add picture url to data somehow
-      var newWorkout = {
-        complete: false,
-        author: context.userId!,
-        muscles: [muscle]
+      //TODO add image url to data somehow
+      const newWorkout = {
+        exercises: [
+          {
+            name: exercise,
+            image: image,
+            sets: Array(sets).fill({ reps: 0, target: Number(reps), weight: Number(weight) })
+          }
+        ]
       }
-      newWorkout[muscle] = {"exercises" : [exercise]}
-      newWorkout[muscle][exercise] = {sets: Array(sets).fill({ reps: 0, target: Number(reps), weight: Number(weight) }), picture: response.mediaId}   
       await makeWorkitPost(context, title, newWorkout)
     }
     );
-    const onRepsClick = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
-      setRepPicker([muscleIndex, exerciseIndex, setIndex])
+    const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
+      setRepPicker([exerciseIndex, setIndex])
     }
     const setRepsForIndices = (indices: number[]) => (reps: number) => {
       const newData = JSON.parse(JSON.stringify(data))
-      const muscle = newData.muscles[indices[0]]
-      const exercise = newData[muscle].exercises[indices[1]]
-      newData[muscle][exercise].sets[indices[2]].reps = reps
+      newData.exercises[indices[0]].sets[indices[1]].reps = reps
       setData(newData)
       setRepPicker([])
       setPendingUpdates(prev => [...prev, newData]);
 
     };
-    const increaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
+    const increaseWeightForIndices = (exerciseIndex: number) => (setIndex: number) => {
       const newData = JSON.parse(JSON.stringify(data))
-      const muscle = newData.muscles[muscleIndex]
-      const exercise = newData[muscle].exercises[exerciseIndex]
-      newData[muscle][exercise].sets[setIndex].weight += increment
+      const newWeight = newData.exercises[exerciseIndex].sets[setIndex].weight + increment
+      newData.exercises[exerciseIndex].sets[setIndex].weight = newWeight
+      setIndex++
+      while (setIndex < newData.exercises[exerciseIndex].sets.length) {
+        if (!newData.exercises[exerciseIndex].sets[setIndex].reps) {
+          newData.exercises[exerciseIndex].sets[setIndex].weight = newWeight
+        }
+        setIndex++
+      }
       setData(newData)
       setPendingUpdates(prev => [...prev, newData]);
     }
-    const decreaseWeightForIndices = (muscleIndex: number, exerciseIndex: number) => (setIndex: number) => {
+    const decreaseWeightForIndices = (exerciseIndex: number) => (setIndex: number) => {
       const newData = JSON.parse(JSON.stringify(data))
-      const muscle = newData.muscles[muscleIndex]
-      const exercise = newData[muscle].exercises[exerciseIndex]
-      newData[muscle][exercise].sets[setIndex].weight -= increment
+      const newWeight = newData.exercises[exerciseIndex].sets[setIndex].weight - increment
+      newData.exercises[exerciseIndex].sets[setIndex].weight = newWeight
+      setIndex++
+      while (setIndex < newData.exercises[exerciseIndex].sets.length) {
+        if (!newData.exercises[exerciseIndex].sets[setIndex].reps) {
+          newData.exercises[exerciseIndex].sets[setIndex].weight = newWeight
+        }
+        setIndex++
+      }
       setData(newData)
       setPendingUpdates(prev => [...prev, newData]);
+    }
+    const resetWorkout = () => {
+      setData({})
+      setPendingUpdates(prev => [...prev, {}]);
     }
     const completeWorkout = () => {
       const newData = JSON.parse(JSON.stringify(data))
@@ -537,36 +503,32 @@ Devvit.addCustomPostType({
 
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <vstack height="100%" width="100%" gap="small" alignment="center middle">
-          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - 1)}/> : <spacer size="medium"/>}
-          <hstack height="100%" width="100%" alignment="center middle">
-            {muscleIndex > 0 ? <icon name="caret-left" onPress={() => setMuscleIndex(muscleIndex - 1)}/> : <spacer size="medium"/>}
+        <vstack height="100%" width="100%" alignment="center middle" gap="small">
+          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, data, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
+          <hstack width="100%" alignment="center middle">
             <Exercise
-              muscle={muscles[muscleIndex]}
-              name={data[muscles[muscleIndex]]["exercises"][exerciseIndex]}
-              image={data[muscles[muscleIndex]]["exercises"][exerciseIndex].toLowerCase().replaceAll(" ", "") + ".gif"}
-              sets={data[muscles[muscleIndex]][data[muscles[muscleIndex]]["exercises"][exerciseIndex]].sets}
-              onRepsClick={onRepsClick(muscleIndex, exerciseIndex)}
-              increaseWeightForIndex={increaseWeightForIndices(muscleIndex, exerciseIndex)}
-              decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex, exerciseIndex)}/> 
-            {context.dimensions!.width > 400 && muscleIndex + 1 < muscles.length ?
+              name={data.exercises[exerciseIndex].name}
+              image={data.exercises[exerciseIndex].image ?? data.exercises[exerciseIndex].name.toLowerCase().replaceAll(" ", "") + ".gif"}
+              sets={data.exercises[exerciseIndex].sets}
+              onRepsClick={onRepsClick(exerciseIndex)}
+              increaseWeightForIndex={increaseWeightForIndices(exerciseIndex)}
+              decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex)}/> 
+            {showSupersets(context, data, exerciseIndex) ?
             <hstack alignment="center middle">
               <spacer size="small" />
               <Exercise
-                muscle={muscles[muscleIndex+1]}
-                name={data[muscles[muscleIndex+1]]["exercises"][exerciseIndex]}
-                image={data[muscles[muscleIndex+1]]["exercises"][exerciseIndex].picture ?? data[muscles[muscleIndex+1]]["exercises"][exerciseIndex].toLowerCase().replaceAll(" ", "") + ".gif"}
-                sets={data[muscles[muscleIndex+1]][data[muscles[muscleIndex+1]]["exercises"][exerciseIndex]].sets}
-                onRepsClick={onRepsClick(muscleIndex+1, exerciseIndex)}
-                increaseWeightForIndex={increaseWeightForIndices(muscleIndex+1, exerciseIndex)}
-                decreaseWeightForIndex={decreaseWeightForIndices(muscleIndex+1, exerciseIndex)}/> 
-              {muscleIndex + 2 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <spacer size="medium"/>}
+              name={data.exercises[exerciseIndex+1].name}
+              image={data.exercises[exerciseIndex+1].image ?? data.exercises[exerciseIndex+1].name.toLowerCase().replaceAll(" ", "") + ".gif"}
+              sets={data.exercises[exerciseIndex+1].sets}
+              onRepsClick={onRepsClick(exerciseIndex+1)}
+              increaseWeightForIndex={increaseWeightForIndices(exerciseIndex+1)}
+              decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}/> 
             </hstack>
-            : muscleIndex + 1 < muscles.length ? <icon name="caret-right" onPress={() => setMuscleIndex(muscleIndex + 1)}/> : <spacer size="medium"/>}
+            : <hstack/>}
           </hstack>
-          {exerciseIndex + 1 < data[muscles[muscleIndex]]["exercises"].length ? <icon name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + 1)}/> : allSetsDone(data) && !data.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
+          {exerciseIndex + ((showSupersets(context, data, exerciseIndex) ? 2 : 1)) < data.exercises.length ? <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, data, exerciseIndex) ? 2 : 1))}/> : allSetsDone(data) && !data.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
         </vstack>
-        {repPicker.length > 2 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
+        {repPicker.length > 1 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
@@ -576,7 +538,10 @@ Devvit.addCustomPostType({
             <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
               <hstack padding="small" onPress={() => context.ui.showForm(postForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New</text><spacer/></hstack>
               <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack>
-              <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
+              <hstack padding="small" onPress={resetWorkout}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
+              {data.author == context.userId! ?
+              <hstack padding="small" onPress={() => setEditMode(true)}><spacer/><icon lightColor='black' darkColor='white' name="edit" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Edit</text><spacer/></hstack>
+              :<vstack/>}
             </vstack>
            : <vstack/> }
         </vstack>
@@ -586,3 +551,4 @@ Devvit.addCustomPostType({
 });
 
 export default Devvit;
+

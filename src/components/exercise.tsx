@@ -11,6 +11,7 @@ interface ExerciseProps {
     increaseWeightForIndex: (setIndex: number) => void
     decreaseWeightForIndex: (setIndex: number) => void
     edit: (() => void) | undefined
+    delete: (() => void) | undefined
 }
 
 function setNumbers(sets: JSONArray) {
@@ -68,7 +69,10 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     return (
         <vstack gap="medium">
             <hstack cornerRadius='large' height='100%' alignment='middle' onPress={props.edit} grow><image url={props.image} width="280px" height={String(350 - props.sets.length * 50) + "px"} resizeMode='cover'></image></hstack>
-            <text size="xlarge" alignment="center top" onPress={props.edit}>{props.name}</text>
+            <hstack alignment="center top">
+                <text size="xlarge" alignment="center top" onPress={props.edit}>{props.name}</text>
+                {props.delete != undefined ? <icon name="delete" onPress={props.delete}/> : <hstack />}
+            </hstack>
             <hstack alignment="center top" gap="small">
               {setNumbers(props.sets)}
               {reps(props.sets, props.onRepsClick)}

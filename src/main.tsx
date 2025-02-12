@@ -472,7 +472,53 @@ Devvit.addCustomPostType({
         await createExerciseFromForm(values, context);
       }
     );
-    const editForm = useForm(
+    const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(
+      {
+        fields: [
+          {
+            type: 'string',
+            name: 'name',
+            label: 'Exercise Name',
+            required: true,
+          },
+          {
+            type: 'image',
+            name: 'image',
+            label: 'Exercise Image',
+            required: true,
+          },
+          {
+            type: 'number',
+            name: 'sets',
+            label: 'Number of Sets',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'targets',
+            label: 'Target reps per set (or comma-separated list of reps)',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'weights',
+            label: 'Weight (or comma-separated list of weights)',
+            required: false,
+          },
+         ],
+         title: 'Create and Insert a New Exercise',
+         acceptLabel: 'Insert into Workout',
+      }, async (values) => {
+        const newExercise = await createExerciseFromForm(values, context);
+        workout.exercises.splice(exerciseIndex, 0, newExercise)
+        setWorkout(workout)
+        setPendingUpdates(prev => [...prev, workout]);
+        template.exercises.splice(exerciseIndex, 0, newExercise)
+        setTemplate(template)
+        setPendingTemplateUpdates(prev => [...prev, template])
+      }
+    ));
+    const editForms = [...Array(workout.exercises.length).keys()].map((exerciseIndex) => useForm(
       (data) => ({
         fields: [
           {
@@ -480,7 +526,7 @@ Devvit.addCustomPostType({
             name: 'name',
             label: 'Exercise Name',
             required: true,
-            defaultValue: data.workout.exercises[data.exerciseIndex].name
+            defaultValue: data.workout.exercises[exerciseIndex].name
           },
           {
             type: 'image',
@@ -493,46 +539,37 @@ Devvit.addCustomPostType({
             name: 'sets',
             label: 'Number of Sets',
             required: true,
-            defaultValue: data.workout.exercises[data.exerciseIndex].sets.length
+            defaultValue: data.workout.exercises[exerciseIndex].sets.length
           },
           {
             type: 'string',
             name: 'targets',
             label: 'Target reps per set (or comma-separated list of reps)',
             required: true,
-            defaultValue: getTargetsAsString(data.workout, data.exerciseIndex)
+            defaultValue: getTargetsAsString(data.workout, exerciseIndex)
           },
           {
             type: 'string',
             name: 'weights',
             label: 'Weight (or comma-separated list of weights)',
             required: false,
-            defaultValue: getWeightsAsString(data.workout, data.exerciseIndex)
+            defaultValue: getWeightsAsString(data.workout, exerciseIndex)
           },
-          {
-            type: 'number',
-            name: 'index',
-            label: 'Replace exercise at index',
-            required: true,
-            disabled: true,
-            defaultValue: data.exerciseIndex
-          }
          ],
          title: 'Edit this Exercise',
          acceptLabel: 'Edit',
       }), async (values) => {
         if (values.image == undefined) {
-          values.image = workout.exercises[values.index].image
+          values.image = workout.exercises[exerciseIndex].image
         }
         const newExercise = await createExerciseFromForm(values, context);
-        console.log(newExercise)
-        workout.exercises[values.index] = newExercise
+        workout.exercises[exerciseIndex] = newExercise
         setWorkout(workout)
         setPendingUpdates(prev => [...prev, workout]);
-        template.exercises[values.index] = withoutReps(newExercise)
+        template.exercises[exerciseIndex] = withoutReps(newExercise)
         setTemplate(template)
         setPendingTemplateUpdates(prev => [...prev, template])
-    });
+    }));
     const options = Object.keys(exerciseCollection).map(exercise => ({ label: exercise, value: exercise }))
     const workoutForm = useForm(
       {
@@ -662,7 +699,18 @@ Devvit.addCustomPostType({
       setPendingUpdates(prev => [...prev, newWorkout]);
     }
     const editExercise = (exerciseIndex: number) => {
-      context.ui.showForm(editForm, {workout: workout, exerciseIndex: exerciseIndex})
+      context.ui.showForm(editForms[exerciseIndex], {workout: workout})
+    }
+    const deleteExercise = (index: number) => {
+      workout.exercises.splice(index, 1)
+      setWorkout(workout)
+      setPendingUpdates(prev => [...prev, workout]);
+      template.exercises.splice(index, 1)
+      setTemplate(template)
+      setPendingTemplateUpdates(prev => [...prev, template])
+      if (exerciseIndex >= workout.exercises.length) {
+        setExerciseIndex(workout.exercises.length - 1)
+      }
     }
     const resetWorkout = () => {
       setWorkout(makeWorkoutFromTemplate(template))
@@ -684,6 +732,7 @@ Devvit.addCustomPostType({
       <zstack height="100%" width="100%" alignment="start top">
         <vstack height="100%" width="100%" alignment="center middle" gap="small">
           {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
+          {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
           <hstack width="100%" alignment="center middle">
             <Exercise
               name={workout.exercises[exerciseIndex].name}
@@ -693,6 +742,7 @@ Devvit.addCustomPostType({
               increaseWeightForIndex={increaseWeightForIndices(exerciseIndex)}
               decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex)}
               edit={editMode ? () => editExercise(exerciseIndex) : undefined}
+              delete={editMode ? () => deleteExercise(exerciseIndex) : undefined}
               /> 
             {showSupersets(context, workout, exerciseIndex) ?
             <hstack alignment="center middle">
@@ -705,11 +755,18 @@ Devvit.addCustomPostType({
                 increaseWeightForIndex={increaseWeightForIndices(exerciseIndex+1)}
                 decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}
                 edit={editMode ? () => editExercise(exerciseIndex+1) : undefined}
+                delete={editMode ? () => deleteExercise(exerciseIndex+1) : undefined}
                 /> 
             </hstack>
             : <hstack/>}
           </hstack>
-          {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ? <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> : allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
+          {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
+            <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
+            <vstack>
+              {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
+              {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
+            </vstack>
+          }
         </vstack>
         {repPicker.length > 1 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
         {showMenu ?

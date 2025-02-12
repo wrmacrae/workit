@@ -58,7 +58,7 @@ const squat: ExerciseData = {
       weight: 45
     })
 };
-const bench = {
+const bench: ExerciseData = {
   name: "Bench Press",
   image: "benchpress.gif",
   sets: Array(5).fill(
@@ -67,7 +67,7 @@ const bench = {
       weight: 45
     })
 };
-const row = {
+const row: ExerciseData = {
   name: "Barbell Row",
   image: "barbellrow.gif",
   sets: Array(5).fill(
@@ -199,6 +199,8 @@ const supersetsWorkout = {
     },
   ]
 }
+
+const STARTING_EXERCISES = strongLifts.exercises.concat(supersetsWorkout.exercises)
 
 function allSetsDone(data) {
   for (const exercise of data.exercises) {
@@ -413,6 +415,8 @@ Devvit.addCustomPostType({
       return <text>Error: {asyncDataResult.error.message}</text>;
     }
     const asyncExerciseCollectionResult = useAsync(async () => {
+      addExercisesForUser(context, strongLifts) // TODO make this configurable
+      addExercisesForUser(context, supersetsWorkout)
       const rawData: Record<string, string> = await context.redis.hGetAll(keyForUser(context.userId!));
       return Object.fromEntries(
         Object.entries(rawData).map(([key, value]) => [key, JSON.parse(value)])

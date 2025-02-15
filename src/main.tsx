@@ -210,10 +210,10 @@ Devvit.addCustomPostType({
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([]);
     const [editMode, setEditMode] = useState(false)
     var { error } = useAsync(async () => {
-      if (pendingUpdates.length > 0) {
-        const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
-        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(latestUpdate));
-        setPendingUpdates([]);
+      while (pendingUpdates.length > 0) {
+        const nextUpdate = pendingUpdates.shift()
+        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(nextUpdate));
+        setPendingUpdates(pendingUpdates);
       }
     }, {
       depends: [pendingUpdates],
@@ -451,6 +451,7 @@ Devvit.addCustomPostType({
       setRepPicker([exerciseIndex, setIndex])
     }
     const setRepsForIndices = (indices: number[]) => (reps: number) => {
+      //TODO: Do I need to copy this way here and 3 similar places below?
       const newWorkout = JSON.parse(JSON.stringify(workout))
       newWorkout.exercises[indices[0]].sets[indices[1]].reps = reps
       setWorkout(newWorkout)

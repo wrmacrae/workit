@@ -32,16 +32,29 @@ const loadingWorkout: WorkoutData = {
   exercises: []
 }
 
-function keyForPostAndUser(postId: string, userId: string) {
-  return `post-${postId}-user-${userId}`
+function keyForWorkout(postId: string, userId: string) {
+  return `workout-for-post-${postId}-for-user-${userId}`
 }
 
-function keyForPost(postId: string) {
-  return `post-${postId}`
+function keyForTemplate(postId: string) {
+  return `template-for-post-${postId}`
 }
 
-function keyForUser(userId: string) {
-  return `user-${userId}`
+function keyForExerciseCollection(userId: string) {
+  return `exercise-collection-for-user-${userId}`
+}
+//TODO: Store this stuff
+function keyForAllWorkouts(userId: string) {
+  return `all-workouts-for-user-${userId}`
+}
+//TODO: Store this stuff
+function keyForAllTemplates(userId: string) {
+  return `all-templates-for-user-${userId}`
+}
+
+//TODO: Store this stuff
+function keyForExerciseToLastSet(userId: string) {
+  return `exercise-to-last-set-for-user-${userId}`
 }
 
 function makeWorkoutFromTemplate(templateWorkout: JSONObject) {
@@ -237,7 +250,7 @@ async function addExercisesForUser(context: Devvit.Context, workout: WorkoutData
     acc[exercise.name] = JSON.stringify(exercise);
     return acc;
 }, {});
-  await context.redis.hset(keyForUser(context.userId!), fieldValues)
+  await context.redis.hSet(keyForExerciseCollection(context.userId!), fieldValues)
 }
 
 async function makeWorkitPost(context: Devvit.Context, title: string, workout: WorkoutData) {
@@ -253,7 +266,7 @@ async function makeWorkitPost(context: Devvit.Context, title: string, workout: W
         </vstack>
     ),
   });
-  await context.redis.set(keyForPost(post.id), JSON.stringify(workout));
+  await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));
   await addExercisesForUser(context, workout)
   context.ui.navigateTo(post)
 }
@@ -327,8 +340,8 @@ function getTargetsAsString(workout: WorkoutData, exerciseIndex: number): string
 }
 
 
-async function createExerciseFromForm(values: { name: string; } & { image: string; } & { sets: number; } & { targets: string; } & { weights?: string | undefined; } & { [key: string]: any; }, context: Devvit.Context) {
-  const { name, image, sets, targets, weights } = values;
+async function createExerciseFromForm(values: { exerciseName: string; } & { image: string; } & { sets: number; } & { targets: string; } & { weights?: string | undefined; } & { [key: string]: any; }, context: Devvit.Context) {
+  const { exerciseName, image, sets, targets, weights } = values;
   try {
     const response = await context.media.upload({
       url: image,
@@ -339,7 +352,7 @@ async function createExerciseFromForm(values: { name: string; } & { image: strin
   }
   const setsArray = createSetsFromInputStrings(sets, targets, weights);
   const exercise = {
-    name: name,
+    name: exerciseName,
     image: image,
     sets: setsArray
   };
@@ -371,7 +384,7 @@ Devvit.addCustomPostType({
     var { error } = useAsync(async () => {
       if (pendingUpdates.length > 0) {
         const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
-        await context.redis.set(keyForPostAndUser(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(latestUpdate));
         setPendingUpdates([]);
       }
     }, {
@@ -383,7 +396,7 @@ Devvit.addCustomPostType({
     ({ error } = useAsync(async () => {
       if (pendingTemplateUpdates.length > 0) {
         const latestUpdate = pendingTemplateUpdates[pendingTemplateUpdates.length - 1];
-        await context.redis.set(keyForPost(context.postId!), JSON.stringify(latestUpdate));
+        await context.redis.set(keyForTemplate(context.postId!), JSON.stringify(latestUpdate));
         setPendingTemplateUpdates([]);
       }
     }, {
@@ -393,8 +406,8 @@ Devvit.addCustomPostType({
       console.error('Failed to save workout to Redis:', error);
     }
     const asyncDataResult = useAsync(async () => {
-      var startedWorkout = await context.redis.get(keyForPostAndUser(context.postId!, context.userId!)) // User started a workout already
-      var templateWorkout = await context.redis.get(keyForPost(context.postId!))
+      var startedWorkout = await context.redis.get(keyForWorkout(context.postId!, context.userId!)) // User started a workout already
+      var templateWorkout = await context.redis.get(keyForTemplate(context.postId!))
       return [startedWorkout, templateWorkout]
     }, {
       depends: [context.postId!, context.userId!],
@@ -415,9 +428,9 @@ Devvit.addCustomPostType({
       return <text>Error: {asyncDataResult.error.message}</text>;
     }
     const asyncExerciseCollectionResult = useAsync(async () => {
-      addExercisesForUser(context, strongLifts) // TODO make this configurable
+      addExercisesForUser(context, strongLifts)
       addExercisesForUser(context, supersetsWorkout)
-      const rawData: Record<string, string> = await context.redis.hGetAll(keyForUser(context.userId!));
+      const rawData: Record<string, string> = await context.redis.hGetAll(keyForExerciseCollection(context.userId!));
       return Object.fromEntries(
         Object.entries(rawData).map(([key, value]) => [key, JSON.parse(value)])
       );
@@ -425,7 +438,6 @@ Devvit.addCustomPostType({
       depends: [context.userId!],
       finally: (loadedData, error) => {
         if (loadedData) {
-          delete loadedData["undefined"] // TODO reset my own collection to delete this from redis
           setExerciseCollection(loadedData)
         }
       }
@@ -441,7 +453,7 @@ Devvit.addCustomPostType({
         fields: [
           {
             type: 'string',
-            name: 'name',
+            name: 'exerciseName',
             label: 'Exercise Name',
             required: true,
           },
@@ -481,7 +493,7 @@ Devvit.addCustomPostType({
         fields: [
           {
             type: 'string',
-            name: 'name',
+            name: 'exerciseName',
             label: 'Exercise Name',
             required: true,
           },
@@ -527,7 +539,7 @@ Devvit.addCustomPostType({
         fields: [
           {
             type: 'string',
-            name: 'name',
+            name: 'exerciseName',
             label: 'Exercise Name',
             required: true,
             defaultValue: data.workout.exercises[exerciseIndex].name
@@ -574,14 +586,14 @@ Devvit.addCustomPostType({
         setTemplate(template)
         setPendingTemplateUpdates(prev => [...prev, template])
     }));
-    const options = Object.keys(exerciseCollection).map(exercise => ({ label: exercise, value: exercise }))
+    const options = Object.keys(exerciseCollection).sort().map(exercise => ({ label: exercise, value: exercise }))
     const workoutForm = useForm(
       {
         fields: [
           {
             type: 'string',
-            name: 'name',
-            label: 'Workout Name',
+            name: 'title',
+            label: 'Workout Title',
             required: true,
           },
           {
@@ -658,9 +670,9 @@ Devvit.addCustomPostType({
          title: 'Create a New Workout',
          acceptLabel: 'Post Workout',
       }, async (values) => {
-        const { name, exercise0, exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9 } = values
+        const { title, exercise0, exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9 } = values
         const exercises = exercise0.concat(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9).filter(exercise => exercise != null).map(exercise => exerciseCollection[exercise])
-        await makeWorkitPost(context, name, {exercises: exercises})
+        await makeWorkitPost(context, title, {exercises: exercises})
       }
     );
     const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
@@ -734,44 +746,49 @@ Devvit.addCustomPostType({
 
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <vstack height="100%" width="100%" alignment="center middle" gap="small">
-          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
-          {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
-          <hstack width="100%" alignment="center middle">
-            <Exercise
-              name={workout.exercises[exerciseIndex].name}
-              image={workout.exercises[exerciseIndex].image ?? workout.exercises[exerciseIndex].name.toLowerCase().replaceAll(" ", "") + ".gif"}
-              sets={workout.exercises[exerciseIndex].sets}
-              onRepsClick={onRepsClick(exerciseIndex)}
-              increaseWeightForIndex={increaseWeightForIndices(exerciseIndex)}
-              decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex)}
-              edit={editMode ? () => editExercise(exerciseIndex) : undefined}
-              delete={editMode ? () => deleteExercise(exerciseIndex) : undefined}
-              /> 
-            {showSupersets(context, workout, exerciseIndex) ?
-            <hstack alignment="center middle">
-              <spacer size="small" />
+        <hstack height="100%" width="100%" alignment="center middle">
+          <vstack height="100%" width="100%" alignment="center middle" gap="small">
+            {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
+            {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
+            <hstack width="100%" alignment="center middle">
               <Exercise
-                name={workout.exercises[exerciseIndex+1].name}
-                image={workout.exercises[exerciseIndex+1].image ?? workout.exercises[exerciseIndex+1].name.toLowerCase().replaceAll(" ", "") + ".gif"}
-                sets={workout.exercises[exerciseIndex+1].sets}
-                onRepsClick={onRepsClick(exerciseIndex+1)}
-                increaseWeightForIndex={increaseWeightForIndices(exerciseIndex+1)}
-                decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}
-                edit={editMode ? () => editExercise(exerciseIndex+1) : undefined}
-                delete={editMode ? () => deleteExercise(exerciseIndex+1) : undefined}
+                name={workout.exercises[exerciseIndex].name}
+                image={workout.exercises[exerciseIndex].image ?? workout.exercises[exerciseIndex].name.toLowerCase().replaceAll(" ", "") + ".gif"}
+                sets={workout.exercises[exerciseIndex].sets}
+                onRepsClick={onRepsClick(exerciseIndex)}
+                increaseWeightForIndex={increaseWeightForIndices(exerciseIndex)}
+                decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex)}
+                edit={editMode ? () => editExercise(exerciseIndex) : undefined}
+                delete={editMode ? () => deleteExercise(exerciseIndex) : undefined}
                 /> 
+              {showSupersets(context, workout, exerciseIndex) ?
+              <hstack alignment="center middle">
+                <spacer size="small" />
+                <Exercise
+                  name={workout.exercises[exerciseIndex+1].name}
+                  image={workout.exercises[exerciseIndex+1].image ?? workout.exercises[exerciseIndex+1].name.toLowerCase().replaceAll(" ", "") + ".gif"}
+                  sets={workout.exercises[exerciseIndex+1].sets}
+                  onRepsClick={onRepsClick(exerciseIndex+1)}
+                  increaseWeightForIndex={increaseWeightForIndices(exerciseIndex+1)}
+                  decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}
+                  edit={editMode ? () => editExercise(exerciseIndex+1) : undefined}
+                  delete={editMode ? () => deleteExercise(exerciseIndex+1) : undefined}
+                  /> 
+              </hstack>
+              : <hstack/>}
             </hstack>
-            : <hstack/>}
-          </hstack>
-          {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
-            <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
-            <vstack>
-              {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
-              {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
-            </vstack>
-          }
-        </vstack>
+            {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
+              <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
+              <vstack>
+                {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
+                {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
+              </vstack>
+            }
+          </vstack>
+          <vstack height="100%">
+            {workout.exercises.flatMap((exercise) => exercise.sets).map((set) => set.reps != undefined && set.reps > 0 ? <vstack backgroundColor='green' width="20px" grow/>: <vstack backgroundColor='gray' width="20px" grow/>)}
+          </vstack>
+        </hstack>
         {repPicker.length > 1 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :

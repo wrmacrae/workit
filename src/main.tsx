@@ -4,35 +4,14 @@ import { RepPicker } from './components/reppicker.js';
 import { Exercise } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
+import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
+import { strongLifts, supersetsWorkout, squat } from './examples.js';
 
 Devvit.configure({
   redditAPI: true,
   redis: true,
   media: true,
 });
-
-type SetData = {
-  target?: number
-  weight?: number
-  reps?: number
-}
-
-type ExerciseData = {
-  name: string
-  image: string
-  superset?: boolean
-  sets: SetData[]
-}
-
-type WorkoutData = {
-  complete?: boolean
-  author?: string
-  exercises: ExerciseData[]
-}
-
-const loadingWorkout: WorkoutData = {
-  exercises: []
-}
 
 function keyForWorkout(postId: string, userId: string) {
   return `workout-for-post-${postId}-for-user-${userId}`
@@ -63,159 +42,6 @@ function makeWorkoutFromTemplate(templateWorkout: JSONObject) {
   templateWorkout.complete = false
   return templateWorkout
 }
-
-const squat: ExerciseData = {
-  name: "Squat",
-  image: "squat.gif",
-  sets: Array(5).fill(
-    {
-      target: 5,
-      weight: 45
-    })
-};
-const bench: ExerciseData = {
-  name: "Bench Press",
-  image: "benchpress.gif",
-  sets: Array(5).fill(
-    {
-      target: 5,
-      weight: 45
-    })
-};
-const row: ExerciseData = {
-  name: "Barbell Row",
-  image: "barbellrow.gif",
-  sets: Array(5).fill(
-    {
-      target: 5,
-      weight: 45
-    })
-};
-const strongLifts = {
-  exercises: [
-    squat,
-    bench,
-    row,
-  ]
-}
-
-const supersetsWorkout = {
-  exercises: [
-    {
-      name: "Weighted Lunge",
-      image: "weightedlunge.gif",
-      superset: true,
-      sets:
-      [
-        {
-          target: 15,
-          weight: 15
-        },
-        {
-          target: 12,
-          weight: 15
-        },
-        {
-          target: 10,
-          weight: 15
-        },
-      ],
-    },
-    {
-      name: "Spiderman Plank Crunch",
-      image: "spidermanplankcrunch.gif",
-      sets: Array(3).fill(
-        {
-          target: 15,
-        })
-    },
-    {
-      name: "Squat 3x10",
-      image: "squat.gif",
-      superset: true,
-      sets:
-      [
-        {
-          target: 15,
-          weight: 45
-        },
-        {
-          target: 12,
-          weight: 45
-        },
-        {
-          target: 10,
-          weight: 45
-        },
-      ],
-    },
-    {
-      name: "Leg Lift",
-      image: "leglift.gif",
-      sets: Array(3).fill(
-        {
-          target: 15,
-        })
-    },
-    {
-      name: "Hip Thrust",
-      image: "hipthrust.gif",
-      superset: true,
-      sets:
-      [
-        {
-          target: 15,
-          weight: 45
-        },
-        {
-          target: 12,
-          weight: 45
-        },
-        {
-          target: 10,
-          weight: 45
-        },
-      ],
-    },
-    {
-      name: "Jackknife Crunch",
-      image: "jackknifecrunch.gif",
-      sets: Array(3).fill(
-        {
-          target: 15,
-        })
-    },    {
-      name: "Calf Raise",
-      image: "calfraise.gif",
-      superset: true,
-      sets:
-      [
-        {
-          target: 15,
-          weight: 45
-        },
-        {
-          target: 12,
-          weight: 45
-        },
-        {
-          target: 10,
-          weight: 45
-        },
-      ],
-    },
-    {
-      name: "Bicycle",
-      image: "bicycle.gif",
-      sets: Array(3).fill(
-        {
-          target: 15,
-        })
-    },
-  ]
-}
-
-const STARTING_EXERCISES = strongLifts.exercises.concat(supersetsWorkout.exercises)
 
 function allSetsDone(data) {
   for (const exercise of data.exercises) {
@@ -589,9 +415,7 @@ Devvit.addCustomPostType({
         setPendingTemplateUpdates(prev => [...prev, template])
     }));
     const options = Object.keys(exerciseCollection).sort().map(exercise => ({ label: exercise, value: exercise }))
-    const workoutForm = useForm(
-      {
-        fields: [
+    const requiredExerciseFields = [
           {
             type: 'string',
             name: 'title',
@@ -601,74 +425,20 @@ Devvit.addCustomPostType({
           {
             type: 'select',
             name: 'exercise0',
-            label: 'First Exercise',
+            label: 'Exercise 1',
             required: true,
             options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise1',
-            label: 'Second Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise2',
-            label: 'Third Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise3',
-            label: 'Fourth Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise4',
-            label: 'Fifth Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise5',
-            label: 'Sixth Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise6',
-            label: 'Seventh Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise7',
-            label: 'Eighth Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise8',
-            label: 'Ninth Exercise',
-            required: false,
-            options: options
-          },
-          {
-            type: 'select',
-            name: 'exercise9',
-            label: 'Tenth Exercise',
-            required: false,
-            options: options
-          },
-         ],
+          }]
+    const optionalExerciseFields = [...Array(9).keys()].map((index) => ({
+      type: 'select',
+      name: 'exercise' + (index+1).toString,
+      label: 'Exercise' + (index+2).toString,
+      required: false,
+      options: options
+    }))
+    const workoutForm = useForm(
+      {
+         fields: requiredExerciseFields + optionalExerciseFields,
          title: 'Create a New Workout',
          acceptLabel: 'Post Workout',
       }, async (values) => {

@@ -12,7 +12,7 @@ interface MenuProps {
 }
 
 export const Menu = (props: MenuProps): JSX.Element => {
-    return (<vstack padding='small'>
+    return (<vstack padding="small" gap="small">
     <button appearance="bordered" onPress={() => props.setShowMenu(!props.showMenu)} icon={props.showMenu ? "close" : "menu-fill"}></button>
     {props.showMenu ?
       <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>

@@ -2,6 +2,7 @@
 import { Devvit, JSONObject, RedditAPIClient, RedisClient, useAsync, useForm, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
 import { Exercise } from './components/exercise.js';
+import { ProgressBar } from './components/progressbar.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -785,9 +786,7 @@ Devvit.addCustomPostType({
               </vstack>
             }
           </vstack>
-          <vstack height="100%">
-            {workout.exercises.flatMap((exercise) => exercise.sets).map((set) => set.reps != undefined && set.reps > 0 ? <vstack backgroundColor='green' width="20px" grow/>: <vstack backgroundColor='gray' width="20px" grow/>)}
-          </vstack>
+          <ProgressBar setDonenesses={workout.exercises.flatMap((exercise) => exercise.sets).map((set) => set.reps != undefined && set.reps > 0)}/>
         </hstack>
         {repPicker.length > 1 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
         {showMenu ?

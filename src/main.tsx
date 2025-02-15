@@ -3,6 +3,7 @@ import { Devvit, JSONObject, RedditAPIClient, RedisClient, useAsync, useForm, us
 import { RepPicker } from './components/reppicker.js';
 import { Exercise } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
+import { Menu } from './components/menu.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -774,7 +775,7 @@ Devvit.addCustomPostType({
                   decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}
                   edit={editMode ? () => editExercise(exerciseIndex+1) : undefined}
                   delete={editMode ? () => deleteExercise(exerciseIndex+1) : undefined}
-                  /> 
+                /> 
               </hstack>
               : <hstack/>}
             </hstack>
@@ -792,20 +793,11 @@ Devvit.addCustomPostType({
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
-        <vstack padding='small'>
-          <button appearance="bordered" onPress={() => setShowMenu(!showMenu)} icon={showMenu ? "close" : "menu-fill"}></button>
-          {showMenu ?
-            <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
-              <hstack padding="small" onPress={() => context.ui.showForm(exerciseForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
-              <hstack padding="small" onPress={() => context.ui.showForm(workoutForm)}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>
-              {/* <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack> */}
-              <hstack padding="small" onPress={resetWorkout}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
-              {workout.author == context.userId! ?
-              <hstack padding="small" onPress={toggleEditMode}><spacer/><icon lightColor='black' darkColor='white' name={editMode ? "edit-fill": "edit"} /><spacer/><text lightColor='black' darkColor='white' weight="bold">{editMode ? "Dis" : "En"}able Edit Mode</text><spacer/></hstack>
-              :<vstack/>}
-            </vstack>
-           : <vstack/> }
-        </vstack>
+        <Menu setShowMenu={setShowMenu} showMenu={showMenu}
+          newExercise={() => context.ui.showForm(exerciseForm)} resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
+          newWorkout={() => context.ui.showForm(workoutForm)}
+          isAuthor={workout.author == context.userId}
+        />
       </zstack>
     );
   },

@@ -81,7 +81,7 @@ async function addExercisesForUser(context: Devvit.Context, workout: WorkoutData
   await context.redis.hSet(keyForExerciseCollection(context.userId!), fieldValues)
 }
 
-async function makeWorkitPost(context: Devvit.Context, title: string, workout: WorkoutData) {
+export async function makeWorkitPost(context: Devvit.Context, title: string, workout: WorkoutData) {
   workout.author = context.userId!
   context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
@@ -167,8 +167,7 @@ function getTargetsAsString(workout: WorkoutData, exerciseIndex: number): string
     set.target?.toString()).join(", ");
 }
 
-
-async function createExerciseFromForm(values: { exerciseName: string; } & { image: string; } & { sets: number; } & { targets: string; } & { weights?: string | undefined; } & { [key: string]: any; }, context: Devvit.Context) {
+export async function createExerciseFromForm(values: { exerciseName: string; } & { image: string; } & { sets: number; } & { targets: string; } & { weights?: string | undefined; } & { [key: string]: any; }, context: Devvit.Context) {
   const { exerciseName, image, sets, targets, weights } = values;
   try {
     const response = await context.media.upload({
@@ -276,46 +275,6 @@ Devvit.addCustomPostType({
     if (asyncExerciseCollectionResult.error) {
       return <text>Error: {asyncExerciseCollectionResult.error.message}</text>;
     }
-    const exerciseForm = useForm(
-      {
-        fields: [
-          {
-            type: 'string',
-            name: 'exerciseName',
-            label: 'Exercise Name',
-            required: true,
-          },
-          {
-            type: 'image',
-            name: 'image',
-            label: 'Exercise Image',
-            required: true,
-          },
-          {
-            type: 'number',
-            name: 'sets',
-            label: 'Number of Sets',
-            required: true,
-          },
-          {
-            type: 'string',
-            name: 'targets',
-            label: 'Target reps per set (or comma-separated list of reps)',
-            required: true,
-          },
-          {
-            type: 'string',
-            name: 'weights',
-            label: 'Weight (or comma-separated list of weights)',
-            required: false,
-          },
-         ],
-         title: 'Create a New Exercise',
-         acceptLabel: 'Save to Collection',
-      }, async (values) => {
-        await createExerciseFromForm(values, context);
-      }
-    );
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(
       {
         fields: [
@@ -414,39 +373,6 @@ Devvit.addCustomPostType({
         setTemplate(template)
         setPendingTemplateUpdates(prev => [...prev, template])
     }));
-    const options = Object.keys(exerciseCollection).sort().map(exercise => ({ label: exercise, value: exercise }))
-    const requiredExerciseFields = [
-          {
-            type: 'string',
-            name: 'title',
-            label: 'Workout Title',
-            required: true,
-          },
-          {
-            type: 'select',
-            name: 'exercise0',
-            label: 'Exercise 1',
-            required: true,
-            options: options
-          }]
-    const optionalExerciseFields = [...Array(9).keys()].map((index) => ({
-      type: 'select',
-      name: 'exercise' + (index+1).toString,
-      label: 'Exercise' + (index+2).toString,
-      required: false,
-      options: options
-    }))
-    const workoutForm = useForm(
-      {
-         fields: requiredExerciseFields + optionalExerciseFields,
-         title: 'Create a New Workout',
-         acceptLabel: 'Post Workout',
-      }, async (values) => {
-        const { title, exercise0, exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9 } = values
-        const exercises = exercise0.concat(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9).filter(exercise => exercise != null).map(exercise => exerciseCollection[exercise])
-        await makeWorkitPost(context, title, {exercises: exercises})
-      }
-    );
     const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
       setRepPicker([exerciseIndex, setIndex])
     }
@@ -564,10 +490,10 @@ Devvit.addCustomPostType({
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
-        <Menu setShowMenu={setShowMenu} showMenu={showMenu}
-          newExercise={() => context.ui.showForm(exerciseForm)} resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
-          newWorkout={() => context.ui.showForm(workoutForm)}
+        <Menu setShowMenu={setShowMenu} showMenu={showMenu} context={context}
+          resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
+          exerciseCollection={exerciseCollection}
         />
       </zstack>
     );

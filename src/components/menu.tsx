@@ -1,23 +1,99 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, useForm } from '@devvit/public-api';
+import { ExerciseData } from '../types.js';
+import { createExerciseFromForm, makeWorkitPost } from '../main.js';
 
 interface MenuProps {
     setShowMenu: (showMenu: boolean) => void
     showMenu: boolean
-    newExercise: () => void
-    newWorkout: () => void
     resetWorkout: () => void
     isAuthor: boolean
     toggleEditMode: () => void
     editMode: boolean
+    context: Devvit.Context
+    exerciseCollection: { [k: string]: ExerciseData }
 }
 
 export const Menu = (props: MenuProps): JSX.Element => {
+    const exerciseForm = useForm(
+        {
+          fields: [
+            {
+              type: 'string',
+              name: 'exerciseName',
+              label: 'Exercise Name',
+              required: true,
+            },
+            {
+              type: 'image',
+              name: 'image',
+              label: 'Exercise Image',
+              required: true,
+            },
+            {
+              type: 'number',
+              name: 'sets',
+              label: 'Number of Sets',
+              required: true,
+            },
+            {
+              type: 'string',
+              name: 'targets',
+              label: 'Target reps per set (or comma-separated list of reps)',
+              required: true,
+            },
+            {
+              type: 'string',
+              name: 'weights',
+              label: 'Weight (or comma-separated list of weights)',
+              required: false,
+            },
+           ],
+           title: 'Create a New Exercise',
+           acceptLabel: 'Save to Collection',
+        }, async (values) => {
+          await createExerciseFromForm(values, props.context);
+        }
+    );
+    const options = Object.keys(props.exerciseCollection).sort().map(exercise => ({ label: exercise, value: exercise }))
+    const requiredExerciseFields = [
+        {
+            type: 'string',
+            name: 'title',
+            label: 'Workout Title',
+            required: true,
+        },
+        {
+            type: 'select',
+            name: 'exercise0',
+            label: 'Exercise 1',
+            required: true,
+            options: options
+        }]
+    const optionalExerciseFields = [...Array(9).keys()].map((_, index) => ({
+        type: 'select',
+        name: 'exercise' + (index+1).toString(),
+        label: 'Exercise' + (index+2).toString(),
+        required: false,
+        options: options
+    }));
+    console.log(optionalExerciseFields)
+    const workoutForm = useForm(
+        {
+           fields: requiredExerciseFields.concat(optionalExerciseFields),
+           title: 'Create a New Workout',
+           acceptLabel: 'Post Workout',
+        }, async (values) => {
+          const { title, exercise0, exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9 } = values
+          const exercises = exercise0.concat(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9).filter((exercise: ExerciseData) => exercise != null).map((exercise: ExerciseData) => props.exerciseCollection[exercise])
+          await makeWorkitPost(props.context, title, {exercises: exercises})
+        }
+      );
     return (<vstack padding="small" gap="small">
     <button appearance="bordered" onPress={() => props.setShowMenu(!props.showMenu)} icon={props.showMenu ? "close" : "menu-fill"}></button>
     {props.showMenu ?
       <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
-        <hstack padding="small" onPress={props.newExercise}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
-        <hstack padding="small" onPress={props.newWorkout}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>
+        <hstack padding="small" onPress={() => props.context.ui.showForm(exerciseForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
+        <hstack padding="small" onPress={() => props.context.ui.showForm(workoutForm)}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>
         {/* <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack> */}
         <hstack padding="small" onPress={props.resetWorkout}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
         {props.isAuthor ?

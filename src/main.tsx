@@ -98,28 +98,6 @@ export async function makeWorkitPost(context: Devvit.Context, title: string, wor
   context.ui.navigateTo(post)
 }
 
-Devvit.addMenuItem({
-  label: 'New Strong Lifts',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, "Strong Lifts Day 1", strongLifts)
-  },
-});
-
-Devvit.addMenuItem({
-  label: 'New Supersets Workout',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, "Legs and Abs", supersetsWorkout)
-  },
-});
-
 function showSupersets(context: Devvit.Context, workout: WorkoutData, exerciseIndex: number) {
   return exerciseIndex >= 0 && workout.exercises.length > exerciseIndex + 1 && context.dimensions!.width > 400 && workout.exercises[exerciseIndex].superset;
 }
@@ -147,26 +125,6 @@ function createSetsFromInputStrings(sets: number, targets: string, weights: stri
   return setsArray;
 }
 
-function getWeightsAsString(workout: WorkoutData, exerciseIndex: number): string {
-  const weights = new Set(workout.exercises[exerciseIndex].sets.map((set: SetData) => set.weight))
-  if (weights.size == 1) {
-    return `${weights.values().next().value}` == "undefined" ? "" : `${weights.values().next().value}`
-  }
-  return workout.exercises[exerciseIndex].sets.filter((set) =>
-    set.weight != undefined).map((set) =>
-    set.weight?.toString()).join(", ");
-}
-
-function getTargetsAsString(workout: WorkoutData, exerciseIndex: number): string {
-  const targets = new Set(workout.exercises[exerciseIndex].sets.map((set: SetData) => set.target))
-  if (targets.size == 1) {
-    return `${targets.values().next().value}` == "undefined" ? "" : `${targets.values().next().value}`
-  }
-  return workout.exercises[exerciseIndex].sets.filter((set) =>
-    set.target != undefined).map((set) =>
-    set.target?.toString()).join(", ");
-}
-
 export async function createExerciseFromForm(values: { exerciseName: string; } & { image: string; } & { sets: number; } & { targets: string; } & { weights?: string | undefined; } & { [key: string]: any; }, context: Devvit.Context) {
   const { exerciseName, image, sets, targets, weights } = values;
   try {
@@ -184,13 +142,6 @@ export async function createExerciseFromForm(values: { exerciseName: string; } &
     sets: setsArray
   };
   addExerciseForUser(context, exercise);
-  return exercise
-}
-
-function withoutReps(exercise: ExerciseData) {
-  for (var set of exercise.sets) {
-    delete set.reps
-  }
   return exercise
 }
 
@@ -321,58 +272,7 @@ Devvit.addCustomPostType({
         setPendingTemplateUpdates(prev => [...prev, template])
       }
     ));
-    const editForms = [...Array(workout.exercises.length).keys()].map((exerciseIndex) => useForm(
-      (data) => ({
-        fields: [
-          {
-            type: 'string',
-            name: 'exerciseName',
-            label: 'Exercise Name',
-            required: true,
-            defaultValue: data.workout.exercises[exerciseIndex].name
-          },
-          {
-            type: 'image',
-            name: 'image',
-            label: 'Exercise Image (Leave blank to keep original)',
-            required: false,
-          },
-          {
-            type: 'number',
-            name: 'sets',
-            label: 'Number of Sets',
-            required: true,
-            defaultValue: data.workout.exercises[exerciseIndex].sets.length
-          },
-          {
-            type: 'string',
-            name: 'targets',
-            label: 'Target reps per set (or comma-separated list of reps)',
-            required: true,
-            defaultValue: getTargetsAsString(data.workout, exerciseIndex)
-          },
-          {
-            type: 'string',
-            name: 'weights',
-            label: 'Weight (or comma-separated list of weights)',
-            required: false,
-            defaultValue: getWeightsAsString(data.workout, exerciseIndex)
-          },
-         ],
-         title: 'Edit this Exercise',
-         acceptLabel: 'Edit',
-      }), async (values) => {
-        if (values.image == undefined) {
-          values.image = workout.exercises[exerciseIndex].image
-        }
-        const newExercise = await createExerciseFromForm(values, context);
-        workout.exercises[exerciseIndex] = newExercise
-        setWorkout(workout)
-        setPendingUpdates(prev => [...prev, workout]);
-        template.exercises[exerciseIndex] = withoutReps(newExercise)
-        setTemplate(template)
-        setPendingTemplateUpdates(prev => [...prev, template])
-    }));
+
     const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
       setRepPicker([exerciseIndex, setIndex])
     }
@@ -386,48 +286,6 @@ Devvit.addCustomPostType({
       setPendingUpdates(prev => [...prev, newWorkout]);
 
     };
-    const increaseWeightForIndices = (exerciseIndex: number) => (setIndex: number) => {
-      const newWorkout = JSON.parse(JSON.stringify(workout))
-      const newWeight = newWorkout.exercises[exerciseIndex].sets[setIndex].weight + increment
-      newWorkout.exercises[exerciseIndex].sets[setIndex].weight = newWeight
-      setIndex++
-      while (setIndex < newWorkout.exercises[exerciseIndex].sets.length) {
-        if (!newWorkout.exercises[exerciseIndex].sets[setIndex].reps) {
-          newWorkout.exercises[exerciseIndex].sets[setIndex].weight = newWeight
-        }
-        setIndex++
-      }
-      setWorkout(newWorkout)
-      setPendingUpdates(prev => [...prev, newWorkout]);
-    }
-    const decreaseWeightForIndices = (exerciseIndex: number) => (setIndex: number) => {
-      const newWorkout = JSON.parse(JSON.stringify(workout))
-      const newWeight = newWorkout.exercises[exerciseIndex].sets[setIndex].weight - increment
-      newWorkout.exercises[exerciseIndex].sets[setIndex].weight = newWeight
-      setIndex++
-      while (setIndex < newWorkout.exercises[exerciseIndex].sets.length) {
-        if (!newWorkout.exercises[exerciseIndex].sets[setIndex].reps) {
-          newWorkout.exercises[exerciseIndex].sets[setIndex].weight = newWeight
-        }
-        setIndex++
-      }
-      setWorkout(newWorkout)
-      setPendingUpdates(prev => [...prev, newWorkout]);
-    }
-    const editExercise = (exerciseIndex: number) => {
-      context.ui.showForm(editForms[exerciseIndex], {workout: workout})
-    }
-    const deleteExercise = (index: number) => {
-      workout.exercises.splice(index, 1)
-      setWorkout(workout)
-      setPendingUpdates(prev => [...prev, workout]);
-      template.exercises.splice(index, 1)
-      setTemplate(template)
-      setPendingTemplateUpdates(prev => [...prev, template])
-      if (exerciseIndex >= workout.exercises.length) {
-        setExerciseIndex(workout.exercises.length - 1)
-      }
-    }
     const resetWorkout = () => {
       setWorkout(makeWorkoutFromTemplate(template))
       setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template)]);
@@ -452,27 +310,35 @@ Devvit.addCustomPostType({
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
               <Exercise
-                name={workout.exercises[exerciseIndex].name}
-                image={workout.exercises[exerciseIndex].image ?? workout.exercises[exerciseIndex].name.toLowerCase().replaceAll(" ", "") + ".gif"}
-                sets={workout.exercises[exerciseIndex].sets}
+                exerciseIndex={exerciseIndex}
+                increment={increment}
                 onRepsClick={onRepsClick(exerciseIndex)}
-                increaseWeightForIndex={increaseWeightForIndices(exerciseIndex)}
-                decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex)}
-                edit={editMode ? () => editExercise(exerciseIndex) : undefined}
-                delete={editMode ? () => deleteExercise(exerciseIndex) : undefined}
+                editMode={editMode}
+                context={context}
+                workout={workout}
+                setWorkout={setWorkout}
+                template={template}
+                setTemplate={setTemplate}
+                setPendingUpdates={setPendingUpdates}
+                setPendingTemplateUpdates={setPendingTemplateUpdates}
+                setExerciseIndex={setExerciseIndex}
                 /> 
               {showSupersets(context, workout, exerciseIndex) ?
               <hstack alignment="center middle">
                 <spacer size="small" />
                 <Exercise
-                  name={workout.exercises[exerciseIndex+1].name}
-                  image={workout.exercises[exerciseIndex+1].image ?? workout.exercises[exerciseIndex+1].name.toLowerCase().replaceAll(" ", "") + ".gif"}
-                  sets={workout.exercises[exerciseIndex+1].sets}
+                  exerciseIndex={exerciseIndex+1}
+                  increment={increment}
                   onRepsClick={onRepsClick(exerciseIndex+1)}
-                  increaseWeightForIndex={increaseWeightForIndices(exerciseIndex+1)}
-                  decreaseWeightForIndex={decreaseWeightForIndices(exerciseIndex+1)}
-                  edit={editMode ? () => editExercise(exerciseIndex+1) : undefined}
-                  delete={editMode ? () => deleteExercise(exerciseIndex+1) : undefined}
+                  editMode={editMode}
+                  context={context}
+                  workout={workout}
+                  setWorkout={setWorkout}
+                  template={template}
+                  setTemplate={setTemplate}
+                  setPendingUpdates={setPendingUpdates}
+                  setPendingTemplateUpdates={setPendingTemplateUpdates}
+                  setExerciseIndex={setExerciseIndex}
                 /> 
               </hstack>
               : <hstack/>}

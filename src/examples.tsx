@@ -1,4 +1,6 @@
+import { Devvit } from "@devvit/public-api";
 import { ExerciseData } from "./types.js";
+import { makeWorkitPost } from "./main.js";
 
 export const squat: ExerciseData = {
   name: "Squat",
@@ -145,4 +147,25 @@ export const supersetsWorkout = {
     },
   ]
 };
-const STARTING_EXERCISES = strongLifts.exercises.concat(supersetsWorkout.exercises);
+
+Devvit.addMenuItem({
+  label: 'New Strong Lifts',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await makeWorkitPost(context, "Strong Lifts Day 1", strongLifts)
+  },
+});
+
+Devvit.addMenuItem({
+  label: 'New Supersets Workout',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await makeWorkitPost(context, "Legs and Abs", supersetsWorkout)
+  },
+});

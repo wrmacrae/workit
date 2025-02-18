@@ -1,23 +1,97 @@
-import { Devvit, JSONArray } from '@devvit/public-api';
+import { Devvit, JSONArray, SetStateAction, StateSetter, useForm } from '@devvit/public-api';
 import { DisabledWeight, Weight } from './weight.js';
 import { Reps } from './reps.js';
 import { SetNumber } from './setnumber.js';
+import { ExerciseData, SetData, WorkoutData } from '../types.js';
+import { createExerciseFromForm } from '../main.js';
 
 interface ExerciseProps {
-    name: string
-    image: string
-    sets: JSONArray
+    exerciseIndex: number
+    increment: number
     onRepsClick: (setIndex: number) => void
-    increaseWeightForIndex: (setIndex: number) => void
-    decreaseWeightForIndex: (setIndex: number) => void
-    edit: (() => void) | undefined
-    delete: (() => void) | undefined
+    editMode: boolean
+    context: Devvit.Context
+    setWorkout: (value: SetStateAction<WorkoutData>) => void
+    workout: WorkoutData
+    setTemplate: (value: SetStateAction<WorkoutData>) => void
+    template: WorkoutData
+    setPendingUpdates: StateSetter<never[]>
+    setPendingTemplateUpdates: StateSetter<never[]>
+    setExerciseIndex: StateSetter<number>
+}
+const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
+    const newWorkout = JSON.parse(JSON.stringify(props.workout))
+    const newWeight = newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight + props.increment
+    newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    setIndex++
+    while (setIndex < newWorkout.exercises[props.exerciseIndex].sets.length) {
+      if (!newWorkout.exercises[props.exerciseIndex].sets[setIndex].reps) {
+        newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+      }
+      setIndex++
+    }
+    props.setWorkout(newWorkout)
+    props.setPendingUpdates(prev => [...prev, newWorkout]);
+}
+const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
+    const newWorkout = JSON.parse(JSON.stringify(props.workout))
+    const newWeight = newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight - props.increment
+    newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    setIndex++
+    while (setIndex < newWorkout.exercises[props.exerciseIndex].sets.length) {
+      if (!newWorkout.exercises[props.exerciseIndex].sets[setIndex].reps) {
+        newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+      }
+      setIndex++
+    }
+    props.setWorkout(newWorkout)
+    props.setPendingUpdates(prev => [...prev, newWorkout]);
 }
 
-function setNumbers(sets: JSONArray) {
+const deleteExercise = (props: ExerciseProps) => {
+    props.workout.exercises.splice(props.exerciseIndex, 1)
+    props.setWorkout(props.workout)
+    props.setPendingUpdates(prev => [...prev, props.workout]);
+    props.template.exercises.splice(props.exerciseIndex, 1)
+    props.setTemplate(props.template)
+    props.setPendingTemplateUpdates(prev => [...prev, props.template])
+    if (props.exerciseIndex >= props.workout.exercises.length) {
+        props.setExerciseIndex(props.workout.exercises.length - 1)
+    }
+}
+
+function getWeightsAsString(workout: WorkoutData, exerciseIndex: number): string {
+    const weights = new Set(workout.exercises[exerciseIndex].sets.map((set: SetData) => set.weight))
+    if (weights.size == 1) {
+      return `${weights.values().next().value}` == "undefined" ? "" : `${weights.values().next().value}`
+    }
+    return workout.exercises[exerciseIndex].sets.filter((set) =>
+      set.weight != undefined).map((set) =>
+      set.weight?.toString()).join(", ");
+}
+
+  function getTargetsAsString(workout: WorkoutData, exerciseIndex: number): string {
+    const targets = new Set(workout.exercises[exerciseIndex].sets.map((set: SetData) => set.target))
+    if (targets.size == 1) {
+      return `${targets.values().next().value}` == "undefined" ? "" : `${targets.values().next().value}`
+    }
+    return workout.exercises[exerciseIndex].sets.filter((set) =>
+      set.target != undefined).map((set) =>
+      set.target?.toString()).join(", ");
+}
+
+function withoutReps(exercise: ExerciseData) {
+for (var set of exercise.sets) {
+    delete set.reps
+}
+return exercise
+}
+  
+
+function setNumbers(sets: SetData[]) {
     var setNumbers = []
     for (let i = 0; i < sets.length; i++)  {
-        setNumbers.push(<SetNumber setNumber={i+1} done={sets[i].reps != undefined && sets[i].reps != 0} />)
+        setNumbers.push(<SetNumber setNumber={i+1} done={sets[i].reps != undefined && sets[i].reps != 0} />)    
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -27,7 +101,7 @@ function setNumbers(sets: JSONArray) {
     )
 }
 
-function reps(sets: JSONArray, onRepsClick: (setIndex: number) => void) {
+function reps(sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var reps = []
     for (let i = 0; i < sets.length; i++)  {
         reps.push(<Reps reps={sets[i].reps} target={sets[i].target} onPress={() => onRepsClick(i)}/>)
@@ -40,7 +114,7 @@ function reps(sets: JSONArray, onRepsClick: (setIndex: number) => void) {
     )
 }
 
-function xs(sets: JSONArray) {
+function xs(sets: SetData[]) {
     return (
         <vstack alignment="center middle" gap="small">
             <vstack height="16px"></vstack>
@@ -49,11 +123,11 @@ function xs(sets: JSONArray) {
     )
 }
 
-function weights(sets: JSONArray, increaseWeightForIndex: (setIndex: number) => void, decreaseWeightForIndex: (setIndex: number) => void) {
+function weights(props: ExerciseProps, sets: SetData[]) {
     var weights = []
     for (let i = 0; i < sets.length; i++)  {
         if (sets[i].weight != undefined) {
-            weights.push(<Weight weight={sets[i].weight} increaseWeight={() => increaseWeightForIndex(i)} decreaseWeight={() => decreaseWeightForIndex(i)}/>)
+            weights.push(<Weight weight={sets[i].weight} increaseWeight={() => increaseWeightForIndex(props, i)} decreaseWeight={() => decreaseWeightForIndex(props, i)}/>)
         } else {
             weights.push(<DisabledWeight />)
         }
@@ -66,19 +140,75 @@ function weights(sets: JSONArray, increaseWeightForIndex: (setIndex: number) => 
 }
 
 export const Exercise = (props: ExerciseProps): JSX.Element => {
+    const editForms = [...Array(props.workout.exercises.length).keys()].map((exerciseIndex) => useForm(
+        (data) => ({
+          fields: [
+            {
+              type: 'string',
+              name: 'exerciseName',
+              label: 'Exercise Name',
+              required: true,
+              defaultValue: data.workout.exercises[exerciseIndex].name
+            },
+            {
+              type: 'image',
+              name: 'image',
+              label: 'Exercise Image (Leave blank to keep original)',
+              required: false,
+            },
+            {
+              type: 'number',
+              name: 'sets',
+              label: 'Number of Sets',
+              required: true,
+              defaultValue: data.workout.exercises[exerciseIndex].sets.length
+            },
+            {
+              type: 'string',
+              name: 'targets',
+              label: 'Target reps per set (or comma-separated list of reps)',
+              required: true,
+              defaultValue: getTargetsAsString(data.workout, exerciseIndex)
+            },
+            {
+              type: 'string',
+              name: 'weights',
+              label: 'Weight (or comma-separated list of weights)',
+              required: false,
+              defaultValue: getWeightsAsString(data.workout, exerciseIndex)
+            },
+           ],
+           title: 'Edit this Exercise',
+           acceptLabel: 'Edit',
+        }), async (values) => {
+          if (values.image == undefined) {
+            values.image = props.workout.exercises[exerciseIndex].image
+          }
+          const newExercise = await createExerciseFromForm(values, props.context);
+          props.workout.exercises[props.exerciseIndex] = newExercise
+          props.setWorkout(props.workout)
+          props.setPendingUpdates(prev => [...prev, props.workout]);
+          props.template.exercises[exerciseIndex] = withoutReps(newExercise)
+          props.setTemplate(props.template)
+          props.setPendingTemplateUpdates(prev => [...prev, props.template])
+    }));
+    const editExercise = (props: ExerciseProps) => {
+        props.context.ui.showForm(editForms[props.exerciseIndex], {workout: props.workout})
+    }
+    const exercise = props.workout.exercises[props.exerciseIndex]
     return (
         <vstack gap="medium">
-            <hstack cornerRadius='large' height='100%' alignment='middle' onPress={props.edit} grow><image url={props.image} width="280px" height={String(350 - props.sets.length * 50) + "px"} resizeMode='cover'></image></hstack>
+            <vstack cornerRadius='large' height='100%' alignment='middle' onPress={() => editExercise(props)} grow><image url={exercise.image} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
             <hstack alignment="center top">
-                <text size="xlarge" alignment="center top" onPress={props.edit}>{props.name}</text>
-                {props.delete != undefined ? <icon name="delete" onPress={props.delete}/> : <hstack />}
+                <text size="xlarge" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
+                {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
             <hstack alignment="center top" gap="small">
-              {setNumbers(props.sets)}
-              {reps(props.sets, props.onRepsClick)}
-              {xs(props.sets)}
-              {weights(props.sets, props.increaseWeightForIndex, props.decreaseWeightForIndex)}
+              {setNumbers(exercise.sets)}
+              {reps(exercise.sets, props.onRepsClick)}
+              {xs(exercise.sets)}
+              {weights(props, exercise.sets)}
             </hstack>
-          </vstack>
+        </vstack>
     )
 }

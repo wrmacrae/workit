@@ -76,7 +76,6 @@ export const Menu = (props: MenuProps): JSX.Element => {
         required: false,
         options: options
     }));
-    console.log(optionalExerciseFields)
     const workoutForm = useForm(
         {
            fields: requiredExerciseFields.concat(optionalExerciseFields),

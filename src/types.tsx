@@ -2,6 +2,7 @@ export type SetData = {
   target?: number;
   weight?: number;
   reps?: number;
+  repsEnteredTime?: number;
 };
 export type ExerciseData = {
   name: string;
@@ -10,7 +11,7 @@ export type ExerciseData = {
   sets: SetData[];
 };
 export type WorkoutData = {
-  complete?: boolean;
+  complete?: number;
   author?: string;
   exercises: ExerciseData[];
 };

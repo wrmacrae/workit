@@ -39,7 +39,6 @@ function keyForExerciseToLastSet(userId: string) {
 }
 
 function makeWorkoutFromTemplate(templateWorkout: JSONObject) {
-  templateWorkout.complete = false
   return templateWorkout
 }
 
@@ -129,6 +128,7 @@ function mergeArrays(...arrays: any[][]) {
       Object.assign({}, ...arrays.map(arr => arr[i]))
   );
 }
+
 function createSetsFromInputStrings(sets: number, targets: string, weights: string | undefined) {
   const targetValues = targets.split(',').map(target => target.trim());
   const lastValue = targetValues[targetValues.length - 1];
@@ -202,12 +202,12 @@ Devvit.addCustomPostType({
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
     const [showMenu, setShowMenu] = useState(false)
+    const [editMode, setEditMode] = useState(false)
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)
     const [template, setTemplate] = useState<WorkoutData>(loadingWorkout)
     const [exerciseCollection, setExerciseCollection] = useState({squat: squat})
     const [pendingUpdates, setPendingUpdates] = useState([]);
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([]);
-    const [editMode, setEditMode] = useState(false)
     var { error } = useAsync(async () => {
       while (pendingUpdates.length > 0) {
         const nextUpdate = pendingUpdates.shift()
@@ -380,6 +380,7 @@ Devvit.addCustomPostType({
       //TODO: Do I need to copy this way here and 3 similar places below?
       const newWorkout = JSON.parse(JSON.stringify(workout))
       newWorkout.exercises[indices[0]].sets[indices[1]].reps = reps
+      newWorkout.exercises[indices[0]].sets[indices[1]].repsEnteredTime = Date.now()
       setWorkout(newWorkout)
       setRepPicker([])
       setPendingUpdates(prev => [...prev, newWorkout]);
@@ -433,7 +434,7 @@ Devvit.addCustomPostType({
       setShowMenu(false)
     }
     const completeWorkout = () => {
-      workout.complete = true
+      workout.complete = Date.now()
       setWorkout(workout)
       setPendingUpdates(prev => [...prev, workout]);
       context.reddit.submitComment({id: context.postId!, text: formatWorkoutAsComment(workout) })

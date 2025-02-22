@@ -3,7 +3,11 @@ import { DisabledWeight, Weight } from './weight.js';
 import { Reps } from './reps.js';
 import { SetNumber } from './setnumber.js';
 import { ExerciseData, SetData, WorkoutData } from '../types.js';
-import { createExerciseFromForm } from '../main.js';
+import { createExerciseFromForm, formatExerciseAsComment } from '../main.js';
+
+interface ExerciseSummaryProps {
+    exercise: ExerciseData
+}
 
 interface ExerciseProps {
     exerciseIndex: number
@@ -70,12 +74,12 @@ function getWeightsAsString(workout: WorkoutData, exerciseIndex: number): string
       set.weight?.toString()).join(", ");
 }
 
-  function getTargetsAsString(workout: WorkoutData, exerciseIndex: number): string {
-    const targets = new Set(workout.exercises[exerciseIndex].sets.map((set: SetData) => set.target))
+  function getTargetsAsString(exercise: ExerciseData): string {
+    const targets = new Set(exercise.sets.map((set: SetData) => set.target))
     if (targets.size == 1) {
       return `${targets.values().next().value}` == "undefined" ? "" : `${targets.values().next().value}`
     }
-    return workout.exercises[exerciseIndex].sets.filter((set) =>
+    return exercise.sets.filter((set) =>
       set.target != undefined).map((set) =>
       set.target?.toString()).join(", ");
 }
@@ -139,6 +143,18 @@ function weights(props: ExerciseProps, sets: SetData[]) {
     </vstack>)
 }
 
+function summarizeExerciseTemplate(exercise: ExerciseData) {
+  var comment = `${exercise.name} (`
+  const setsAsStrings = exercise.sets.map((set) => `${set.target}`)
+  if (new Set(setsAsStrings).size == 1)
+  {
+    comment += `${exercise.sets.length}x${setsAsStrings[0]}`
+  } else {
+    comment += setsAsStrings.join(", ")
+  }
+  return comment + ")";
+}
+
 export const Exercise = (props: ExerciseProps): JSX.Element => {
     const editForms = [...Array(props.workout.exercises.length).keys()].map((exerciseIndex) => useForm(
         (data) => ({
@@ -168,7 +184,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
               name: 'targets',
               label: 'Target reps per set (or comma-separated list of reps)',
               required: true,
-              defaultValue: getTargetsAsString(data.workout, exerciseIndex)
+              defaultValue: getTargetsAsString(data.workout[exerciseIndex])
             },
             {
               type: 'string',
@@ -211,4 +227,13 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
             </hstack>
         </vstack>
     )
+}
+
+export const ExerciseSummary = (props: ExerciseSummaryProps): JSX.Element => {
+  return (
+      <vstack height="100%" width="50%" grow gap="small">
+          <vstack cornerRadius='large' alignment='middle' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} resizeMode='cover' grow></image></vstack>
+          <text size="large" alignment="center top">{summarizeExerciseTemplate(props.exercise)}</text>
+      </vstack>
+  )
 }

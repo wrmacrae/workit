@@ -1,11 +1,12 @@
 // Learn more at developers.reddit.com/docs
 import { Devvit, JSONObject, RedditAPIClient, RedisClient, useAsync, useForm, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
-import { Exercise } from './components/exercise.js';
+import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
 import { strongLifts, supersetsWorkout, squat } from './examples.js';
+import { Intro } from './components/intro.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -150,6 +151,7 @@ Devvit.addCustomPostType({
   height: 'tall',
   render: (context) => {
     const increment = 2.5
+    const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPicker, setRepPicker] = useState([-1])
     const [showMenu, setShowMenu] = useState(false)
@@ -291,6 +293,10 @@ Devvit.addCustomPostType({
       setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template)]);
       setShowMenu(false)
     }
+    const returnToSummary = () => {
+      setSummaryMode(true)
+      setShowMenu(false)
+    }
     const completeWorkout = () => {
       workout.complete = Date.now()
       setWorkout(workout)
@@ -301,7 +307,24 @@ Devvit.addCustomPostType({
       setEditMode(!editMode)
       setShowMenu(false)
     }
-
+    const supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid, exercise, index: number) => {
+      if (index > 0 && workout.exercises[index - 1].superset) {
+        grid[grid.length - 1].push(exercise)
+      } else {
+        grid.push([exercise])
+      }
+      return grid
+    }, [])
+    if (summaryMode) {
+      return (
+        <zstack height="100%" width="100%" alignment="center middle">
+          <vstack grow height="100%" width="100%" alignment="center middle" gap="medium" padding='small' onPress={() => setSummaryMode(false)}>
+            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} />)}</hstack>)}
+          </vstack>
+          <button onPress={() => setSummaryMode(false)}>Do This Workout!</button>
+        </zstack>
+      )
+    }
     return (
       <zstack height="100%" width="100%" alignment="start top">
         <hstack height="100%" width="100%" alignment="center middle">
@@ -357,11 +380,12 @@ Devvit.addCustomPostType({
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
-        <Menu setShowMenu={setShowMenu} showMenu={showMenu} context={context}
+        <Menu  returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
           resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}
         />
+        <Intro />
       </zstack>
     );
   },

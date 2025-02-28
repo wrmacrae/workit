@@ -319,15 +319,30 @@ Devvit.addCustomPostType({
     }
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <hstack height="100%" width="100%" alignment="center top">
-          <vstack height="90%" width="100%" alignment="center middle" gap="small">
-            {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
-            {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
-            <hstack width="100%" alignment="center middle">
+        <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))}/>
+        <vstack height="90%" width="100%" alignment="center middle" gap="small">
+          {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
+          {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
+          <hstack width="100%" alignment="center middle">
+            <Exercise
+              exerciseIndex={exerciseIndex} setExerciseIndex={setExerciseIndex}
+              increment={increment}
+              onRepsClick={onRepsClick(exerciseIndex)}
+              editMode={editMode}
+              context={context}
+              workout={workout} setWorkout={setWorkout}
+              template={template} setTemplate={setTemplate}
+              setPendingUpdates={setPendingUpdates}
+              setPendingTemplateUpdates={setPendingTemplateUpdates}
+              repPickerIndices={repPickerIndices}
+              /> 
+            {showSupersets(context, workout, exerciseIndex) ?
+            <hstack alignment="center middle">
+              <spacer size="small" />
               <Exercise
-                exerciseIndex={exerciseIndex} setExerciseIndex={setExerciseIndex}
+                exerciseIndex={exerciseIndex+1} setExerciseIndex={setExerciseIndex}
                 increment={increment}
-                onRepsClick={onRepsClick(exerciseIndex)}
+                onRepsClick={onRepsClick(exerciseIndex+1)}
                 editMode={editMode}
                 context={context}
                 workout={workout} setWorkout={setWorkout}
@@ -335,35 +350,18 @@ Devvit.addCustomPostType({
                 setPendingUpdates={setPendingUpdates}
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
                 repPickerIndices={repPickerIndices}
-                /> 
-              {showSupersets(context, workout, exerciseIndex) ?
-              <hstack alignment="center middle">
-                <spacer size="small" />
-                <Exercise
-                  exerciseIndex={exerciseIndex+1} setExerciseIndex={setExerciseIndex}
-                  increment={increment}
-                  onRepsClick={onRepsClick(exerciseIndex+1)}
-                  editMode={editMode}
-                  context={context}
-                  workout={workout} setWorkout={setWorkout}
-                  template={template} setTemplate={setTemplate}
-                  setPendingUpdates={setPendingUpdates}
-                  setPendingTemplateUpdates={setPendingTemplateUpdates}
-                  repPickerIndices={repPickerIndices}
-                /> 
-              </hstack>
-              : <hstack/>}
+              /> 
             </hstack>
-            {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
-              <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
-              <vstack>
-                {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
-                {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
-              </vstack>
-            }
-          </vstack>
-          <ProgressBar setDonenesses={workout.exercises.flatMap((exercise) => exercise.sets).map((set) => set.reps != undefined && set.reps > 0)}/>
-        </hstack>
+            : <hstack/>}
+          </hstack>
+          {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
+            <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
+            <vstack>
+              {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
+              {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}
+            </vstack>
+          }
+        </vstack>
         {repPickerIndices.length > 1 ? <RepPicker
                                           maxWidth={context.dimensions!.width}
                                           repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
@@ -374,7 +372,7 @@ Devvit.addCustomPostType({
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
-        <Menu  returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
+        <Menu returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
           resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}

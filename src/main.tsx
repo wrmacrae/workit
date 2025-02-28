@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, JSONObject, RedditAPIClient, RedisClient, useAsync, useForm, useState } from '@devvit/public-api';
+import { Devvit, JSONObject, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
@@ -153,7 +153,7 @@ Devvit.addCustomPostType({
     const increment = 2.5
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
-    const [repPicker, setRepPicker] = useState([-1])
+    const [repPickerIndices, setRepPickerIndices] = useState([])
     const [showMenu, setShowMenu] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)
@@ -276,22 +276,14 @@ Devvit.addCustomPostType({
     ));
 
     const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
-      setRepPicker([exerciseIndex, setIndex])
+      setRepPickerIndices([exerciseIndex, setIndex])
     }
-    const setRepsForIndices = (indices: number[]) => (reps: number) => {
-      //TODO: Do I need to copy this way here and 3 similar places below?
-      const newWorkout = JSON.parse(JSON.stringify(workout))
-      newWorkout.exercises[indices[0]].sets[indices[1]].reps = reps
-      newWorkout.exercises[indices[0]].sets[indices[1]].repsEnteredTime = Date.now()
-      setWorkout(newWorkout)
-      setRepPicker([])
-      setPendingUpdates(prev => [...prev, newWorkout]);
 
-    };
     const resetWorkout = () => {
       setWorkout(makeWorkoutFromTemplate(template))
       setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template)]);
       setShowMenu(false)
+      setExerciseIndex(0)
     }
     const returnToSummary = () => {
       setSummaryMode(true)
@@ -327,41 +319,37 @@ Devvit.addCustomPostType({
     }
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <hstack height="100%" width="100%" alignment="center middle">
-          <vstack height="100%" width="100%" alignment="center middle" gap="small">
+        <hstack height="100%" width="100%" alignment="center top">
+          <vstack height="90%" width="100%" alignment="center middle" gap="small">
             {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
               <Exercise
-                exerciseIndex={exerciseIndex}
+                exerciseIndex={exerciseIndex} setExerciseIndex={setExerciseIndex}
                 increment={increment}
                 onRepsClick={onRepsClick(exerciseIndex)}
                 editMode={editMode}
                 context={context}
-                workout={workout}
-                setWorkout={setWorkout}
-                template={template}
-                setTemplate={setTemplate}
+                workout={workout} setWorkout={setWorkout}
+                template={template} setTemplate={setTemplate}
                 setPendingUpdates={setPendingUpdates}
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
-                setExerciseIndex={setExerciseIndex}
+                repPickerIndices={repPickerIndices}
                 /> 
               {showSupersets(context, workout, exerciseIndex) ?
               <hstack alignment="center middle">
                 <spacer size="small" />
                 <Exercise
-                  exerciseIndex={exerciseIndex+1}
+                  exerciseIndex={exerciseIndex+1} setExerciseIndex={setExerciseIndex}
                   increment={increment}
                   onRepsClick={onRepsClick(exerciseIndex+1)}
                   editMode={editMode}
                   context={context}
-                  workout={workout}
-                  setWorkout={setWorkout}
-                  template={template}
-                  setTemplate={setTemplate}
+                  workout={workout} setWorkout={setWorkout}
+                  template={template} setTemplate={setTemplate}
                   setPendingUpdates={setPendingUpdates}
                   setPendingTemplateUpdates={setPendingTemplateUpdates}
-                  setExerciseIndex={setExerciseIndex}
+                  repPickerIndices={repPickerIndices}
                 /> 
               </hstack>
               : <hstack/>}
@@ -376,7 +364,13 @@ Devvit.addCustomPostType({
           </vstack>
           <ProgressBar setDonenesses={workout.exercises.flatMap((exercise) => exercise.sets).map((set) => set.reps != undefined && set.reps > 0)}/>
         </hstack>
-        {repPicker.length > 1 ? <RepPicker maxWidth={context.dimensions!.width} setReps={setRepsForIndices(repPicker)} closePicker={() => setRepPicker([])}></RepPicker> : <vstack />}
+        {repPickerIndices.length > 1 ? <RepPicker
+                                          maxWidth={context.dimensions!.width}
+                                          repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
+                                          workout={workout} setWorkout={setWorkout}
+                                          setExerciseIndex={setExerciseIndex}
+                                          setPendingUpdates={setPendingUpdates}
+                                        /> : <vstack />}
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
@@ -385,7 +379,9 @@ Devvit.addCustomPostType({
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}
         />
-        <Intro />
+        {workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0) ?
+        <Intro setRepPickerIndices={setRepPickerIndices} />
+        :<vstack/>}
       </zstack>
     );
   },

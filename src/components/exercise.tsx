@@ -3,7 +3,7 @@ import { DisabledWeight, Weight } from './weight.js';
 import { Reps } from './reps.js';
 import { SetNumber } from './setnumber.js';
 import { ExerciseData, SetData, WorkoutData } from '../types.js';
-import { createExerciseFromForm, formatExerciseAsComment } from '../main.js';
+import { createExerciseFromForm } from '../main.js';
 
 interface ExerciseSummaryProps {
     exercise: ExerciseData
@@ -22,34 +22,33 @@ interface ExerciseProps {
     setPendingUpdates: StateSetter<never[]>
     setPendingTemplateUpdates: StateSetter<never[]>
     setExerciseIndex: StateSetter<number>
+    repPickerIndices: number[]
 }
 const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
-    const newWorkout = JSON.parse(JSON.stringify(props.workout))
-    const newWeight = newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight + props.increment
-    newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) + props.increment
+    props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
     setIndex++
-    while (setIndex < newWorkout.exercises[props.exerciseIndex].sets.length) {
-      if (!newWorkout.exercises[props.exerciseIndex].sets[setIndex].reps) {
-        newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    while (setIndex < props.workout.exercises[props.exerciseIndex].sets.length) {
+      if (!props.workout.exercises[props.exerciseIndex].sets[setIndex].reps) {
+        props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
       }
       setIndex++
     }
-    props.setWorkout(newWorkout)
-    props.setPendingUpdates(prev => [...prev, newWorkout]);
+    props.setWorkout(props.workout)
+    props.setPendingUpdates(prev => [...prev, props.workout]);
 }
 const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
-    const newWorkout = JSON.parse(JSON.stringify(props.workout))
-    const newWeight = newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight - props.increment
-    newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) - props.increment
+    props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
     setIndex++
-    while (setIndex < newWorkout.exercises[props.exerciseIndex].sets.length) {
-      if (!newWorkout.exercises[props.exerciseIndex].sets[setIndex].reps) {
-        newWorkout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    while (setIndex < props.workout.exercises[props.exerciseIndex].sets.length) {
+      if (!props.workout.exercises[props.exerciseIndex].sets[setIndex].reps) {
+        props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
       }
       setIndex++
     }
-    props.setWorkout(newWorkout)
-    props.setPendingUpdates(prev => [...prev, newWorkout]);
+    props.setWorkout(props.workout)
+    props.setPendingUpdates(prev => [...prev, props.workout]);
 }
 
 const deleteExercise = (props: ExerciseProps) => {
@@ -105,10 +104,11 @@ function setNumbers(sets: SetData[]) {
     )
 }
 
-function reps(sets: SetData[], onRepsClick: (setIndex: number) => void) {
+function reps(sets: SetData[], onRepsClick: (setIndex: number) => void, exerciseIndex: number, repPickerIndices: number[]) {
     var reps = []
     for (let i = 0; i < sets.length; i++)  {
-        reps.push(<Reps reps={sets[i].reps} target={sets[i].target} onPress={() => onRepsClick(i)}/>)
+        const editMode = (repPickerIndices.length == 2 && repPickerIndices[0] == exerciseIndex && repPickerIndices[1] == i)
+        reps.push(<Reps reps={sets[i].reps} target={sets[i].target} onPress={() => onRepsClick(i)} editMode={editMode}/>)
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -131,7 +131,7 @@ function weights(props: ExerciseProps, sets: SetData[]) {
     var weights = []
     for (let i = 0; i < sets.length; i++)  {
         if (sets[i].weight != undefined) {
-            weights.push(<Weight weight={sets[i].weight} increaseWeight={() => increaseWeightForIndex(props, i)} decreaseWeight={() => decreaseWeightForIndex(props, i)}/>)
+            weights.push(<Weight weight={sets[i].weight} increaseWeight={increaseWeightForIndex(props, i)} decreaseWeight={decreaseWeightForIndex(props, i)}/>)
         } else {
             weights.push(<DisabledWeight />)
         }
@@ -219,9 +219,9 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
                 <text size="xlarge" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
-            <hstack alignment="center top" gap="small">
+            <hstack alignment="center middle" gap="small">
               {setNumbers(exercise.sets)}
-              {reps(exercise.sets, props.onRepsClick)}
+              {reps(exercise.sets, props.onRepsClick, props.exerciseIndex, props.repPickerIndices)}
               {xs(exercise.sets)}
               {weights(props, exercise.sets)}
             </hstack>

@@ -43,9 +43,9 @@ function makeWorkoutFromTemplate(templateWorkout: JSONObject) {
   return templateWorkout
 }
 
-function allSetsDone(data) {
+function allSetsDone(data: WorkoutData) {
   for (const exercise of data.exercises) {
-    if (!exercise.sets.every((set) => set.reps > 0)) {
+    if (!exercise.sets.every((set: SetData) => set.reps ?? 0 > 0)) {
       return false
     }
   }
@@ -355,7 +355,10 @@ Devvit.addCustomPostType({
             : <hstack/>}
           </hstack>
           {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
-            <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
+            (workout.exercises[exerciseIndex].sets.every((set: SetData) => set.reps ?? 0 > 0) ?
+              <button icon="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
+              <icon size="medium" name="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/>
+            ) :
             <vstack>
               {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
               {allSetsDone(workout) && !workout.complete ? <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer size="medium"/>}

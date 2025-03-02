@@ -299,7 +299,7 @@ Devvit.addCustomPostType({
       setEditMode(!editMode)
       setShowMenu(false)
     }
-    const supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid, exercise, index: number) => {
+    const supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
       if (index > 0 && workout.exercises[index - 1].superset) {
         grid[grid.length - 1].push(exercise)
       } else {
@@ -319,7 +319,7 @@ Devvit.addCustomPostType({
     }
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))}/>
+        <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))} setExerciseIndex={setExerciseIndex}/>
         <vstack height="90%" width="100%" alignment="center middle" gap="small">
           {exerciseIndex > 0 ? <icon name="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer size="medium"/>}
           {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}

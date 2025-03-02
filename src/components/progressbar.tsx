@@ -1,11 +1,12 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, StateSetter } from '@devvit/public-api';
 
 interface ProgressBarProps {
     setDonenesses: boolean[][]
+    setExerciseIndex: StateSetter<number>
 }
 
 export const ProgressBar = (props: ProgressBarProps): JSX.Element => {
     return (<vstack height="100%" alignment="start middle"><vstack height="50%" padding="small" gap="medium" cornerRadius='small'>
-        {props.setDonenesses.map((exercise) => <vstack grow gap="small">{exercise.map((set) => set ? <vstack backgroundColor='green' width="20px" grow/>: <vstack backgroundColor='gray' width="20px" grow/>)}</vstack>)}
+        {props.setDonenesses.map((exercise, exerciseIndex) => <vstack grow gap="small">{exercise.map((set) => <vstack backgroundColor={set ? "green" : "gray"} width="20px" grow onPress={() => props.setExerciseIndex(exerciseIndex)}/>)}</vstack>)}
       </vstack></vstack>)
 }

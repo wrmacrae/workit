@@ -205,7 +205,7 @@ Devvit.addCustomPostType({
       return <text>Error: {asyncExerciseCollectionResult.error.message}</text>;
     }
     const asyncSettingsResult = useAsync(async () => {
-      return JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? ""))
+      return JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
     }, {
       depends: [context.userId!],
       finally: (settingsData, error) => {
@@ -214,6 +214,24 @@ Devvit.addCustomPostType({
         }
       }
     });
+    const settingsForm = useForm(
+      {
+        fields: [
+          {
+            type: 'number',
+            name: 'increment',
+            label: "Weight Increment",
+            required: true,
+            defaultValue: settings.increment
+          }
+        ],
+        title: "Change Workit Settings",
+        acceptLabel: "Save",
+      }, async (values) => {
+        setSettings(values)
+        await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(values))
+      }
+    )
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(
       {
         fields: [
@@ -364,7 +382,7 @@ Devvit.addCustomPostType({
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
-        <Menu settings={() => console.log("Not implemented")} returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
+        <Menu settings={() => context.ui.showForm(settingsForm)} returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
           resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}

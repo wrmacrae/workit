@@ -94,7 +94,7 @@ export const Menu = (props: MenuProps): JSX.Element => {
     {props.showMenu ?
       <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
         <hstack padding="small" onPress={props.resetWorkout}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
-        {/* <hstack padding="small" onPress={props.returnToSummary}><spacer/><icon lightColor='black' darkColor='white' name="refresh" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Return to Intro Summary</text><spacer/></hstack> */}
+        <hstack padding="small" onPress={props.returnToSummary}><spacer/><icon lightColor='black' darkColor='white' name="refresh" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Return to Intro Summary</text><spacer/></hstack>
         <hstack padding="small" onPress={props.settings}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(exerciseForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(workoutForm)}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>

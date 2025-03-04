@@ -30,10 +30,10 @@ function allSetsDone(data: WorkoutData) {
 
 function formatExerciseAsComment(exercise: ExerciseData) {
   var comment = `${exercise.name}: `
-  const setsAsStrings = exercise.sets.map((set) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
+  const setsAsStrings = exercise.sets.filter((set: SetData) => set.reps).map((set: SetData) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
   if (new Set(setsAsStrings).size == 1)
   {
-    comment += `${exercise.sets.length}x${setsAsStrings[0]}`
+    comment += `${setsAsStrings.length}x${setsAsStrings[0]}`
   } else {
     comment += setsAsStrings.join(", ")
   }
@@ -41,7 +41,7 @@ function formatExerciseAsComment(exercise: ExerciseData) {
 }
 
 function formatWorkoutAsComment(workout: WorkoutData) {
-  return workout.exercises.map(formatExerciseAsComment).join("\n\n")
+  return workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps)).map(formatExerciseAsComment).join("\n\n")
 }
 
 async function addExerciseForUser(context: Devvit.Context, exercise: ExerciseData) {
@@ -349,7 +349,7 @@ Devvit.addCustomPostType({
               ) :
               <vstack>
                 {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
-                {allSetsDone(workout) && !workout.complete ? <button appearance="primary" icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <spacer height="40px"/>}
+                {allSetsDone(workout) && !workout.complete ? <button appearance="primary" icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button>}
               </vstack>
             }
           </vstack>

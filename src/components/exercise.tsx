@@ -91,10 +91,10 @@ return exercise
 }
   
 
-function setNumbers(sets: SetData[]) {
+function setNumbers(sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var setNumbers = []
     for (let i = 0; i < sets.length; i++)  {
-        setNumbers.push(<SetNumber setNumber={i+1} done={sets[i].reps != undefined && sets[i].reps != 0} />)    
+        setNumbers.push(<SetNumber setNumber={i+1} done={sets[i].reps != undefined && sets[i].reps != 0} onPress={() => onRepsClick(i)} />)    
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -220,7 +220,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
             <hstack alignment="center middle" gap="small">
-              {setNumbers(exercise.sets)}
+              {setNumbers(exercise.sets, props.onRepsClick)}
               {reps(exercise.sets, props.onRepsClick, props.exerciseIndex, props.repPickerIndices)}
               {xs(exercise.sets)}
               {weights(props, exercise.sets)}

@@ -15,9 +15,9 @@ export const Intro = (props: IntroProps): JSX.Element => {
     }
     return (
         <zstack alignment="center middle" height="100%" width="100%">
-            <vstack alignment="center middle" height="100%" width="100%" onPress={close} />
+            <vstack alignment="center middle" height="100%" width="100%" onPress={close} lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" />
             <vstack alignment="center middle" height="100%" width="100%">
-                <vstack backgroundColor="gray" alignment="start middle" padding="medium" cornerRadius="medium">
+                <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium">
                     {/* <icon name="info" /> */}
                     <text>You are seeing your own copy of this workout.</text>
                     <text>Workit guides you through set-by-set,</text>

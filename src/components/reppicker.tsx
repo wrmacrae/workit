@@ -22,7 +22,7 @@ const RepButton = (props: RepButtonProps): JSX.Element => {
 }
 
 function gridOfButtons(start: number, end: number, setReps: (reps: number) => void, setStart: StateSetter<number>, target: number): JSX.Element {
-    return <hstack cornerRadius='medium' backgroundColor='lightgray' padding="xsmall" gap="small" alignment="center middle"><button icon="caret-left" onPress={() => setStart(start-5 < 1 ? 1 : start-5)}/>{rowOfButtons(start, end, setReps, target)}<button icon="caret-right" onPress={() => setStart(start+5)}/></hstack>
+    return <hstack cornerRadius='medium' backgroundColor='neutral-background-container' padding="xsmall" gap="small" alignment="center middle"><button icon="caret-left" onPress={() => setStart(start-5 < 1 ? 1 : start-5)}/>{rowOfButtons(start, end, setReps, target)}<button icon="caret-right" onPress={() => setStart(start+5)}/></hstack>
 }
 
 function rowOfButtons(start: number, end: number, setReps: (reps: number) => void, target: number): JSX.Element {

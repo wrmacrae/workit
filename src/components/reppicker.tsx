@@ -14,20 +14,21 @@ interface RepPickerProps {
 interface RepButtonProps {
     reps: number
     setReps: (reps: number) => void
+    isTarget: boolean
 }
 
 const RepButton = (props: RepButtonProps): JSX.Element => {
-    return <button height="40px" width="50px" onPress={() => props.setReps(props.reps)}>{props.reps}</button>
+    return <button appearance={props.isTarget ? "primary" : "secondary"} height="40px" width="50px" onPress={() => props.setReps(props.reps)}>{props.reps}</button>
 }
 
-function gridOfButtons(start: number, end: number, setReps: (reps: number) => void, setStart: StateSetter<number>): JSX.Element {
-    return <hstack cornerRadius='medium' backgroundColor='lightgray' gap="small" padding='small' alignment="center middle"><icon name="caret-left" onPress={() => setStart(start-5)}/>{rowOfButtons(start, end, setReps)}<icon name="caret-right" onPress={() => setStart(start+5)}/></hstack>
+function gridOfButtons(start: number, end: number, setReps: (reps: number) => void, setStart: StateSetter<number>, target: number): JSX.Element {
+    return <hstack cornerRadius='medium' backgroundColor='lightgray' padding="xsmall" gap="small" alignment="center middle"><button icon="caret-left" onPress={() => setStart(start-5 < 1 ? 1 : start-5)}/>{rowOfButtons(start, end, setReps, target)}<button icon="caret-right" onPress={() => setStart(start+5)}/></hstack>
 }
 
-function rowOfButtons(start: number, end: number, setReps: (reps: number) => void): JSX.Element {
+function rowOfButtons(start: number, end: number, setReps: (reps: number) => void, target: number): JSX.Element {
     var buttons = []
     for (var i=start; i<end; i++) {
-        buttons.push(<RepButton reps={i} setReps={setReps}/>)
+        buttons.push(<RepButton reps={i} setReps={setReps} isTarget={i==target}/>)
     }
     return <hstack gap="small" alignment="center middle">{buttons}</hstack>
 }
@@ -52,7 +53,7 @@ export const RepPicker = (props: RepPickerProps): JSX.Element => {
         <zstack height="100%" width="100%" alignment="center bottom">
             <vstack height="100%" width="100%" onPress={closePicker} />
             <vstack height="100%" alignment="center bottom">
-                {gridOfButtons(start, start + 5, setReps, setStart)}
+                {gridOfButtons(start, start + 5, setReps, setStart, target)}
             </vstack>
         </zstack>
     )

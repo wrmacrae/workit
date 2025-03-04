@@ -213,10 +213,10 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     }
     const exercise = props.workout.exercises[props.exerciseIndex]
     return (
-        <vstack gap="medium">
-            <vstack cornerRadius='large' height='100%' alignment='middle' onPress={() => editExercise(props)} grow><image url={exercise.image} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
+        <vstack gap="small">
+            <vstack cornerRadius='large' height='100%' alignment='middle' onPress={props.editMode ? () => editExercise(props) : undefined} grow><image url={exercise.image} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
             <hstack alignment="center top">
-                <text size="xlarge" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
+                <text size="large" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
             <hstack alignment="center middle" gap="small">

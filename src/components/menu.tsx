@@ -3,6 +3,7 @@ import { ExerciseData } from '../types.js';
 import { createExerciseFromForm, makeWorkitPost } from '../main.js';
 
 interface MenuProps {
+    settings: () => void
     returnToSummary: () => void
     setShowMenu: (showMenu: boolean) => void
     showMenu: boolean
@@ -70,7 +71,7 @@ export const Menu = (props: MenuProps): JSX.Element => {
             required: true,
             options: options
         }]
-    const optionalExerciseFields = [...Array(9).keys()].map((_, index) => ({
+    const optionalExerciseFields = [...Array(7).keys()].map((_, index) => ({
         type: 'select',
         name: 'exercise' + (index+1).toString(),
         label: 'Exercise' + (index+2).toString(),
@@ -89,11 +90,12 @@ export const Menu = (props: MenuProps): JSX.Element => {
         }
       );
     return (<vstack padding="small" gap="small">
-    <button appearance="bordered" onPress={() => props.setShowMenu(!props.showMenu)} icon={props.showMenu ? "close" : "menu-fill"}></button>
+    <button onPress={() => props.setShowMenu(!props.showMenu)} icon={props.showMenu ? "close" : "menu-fill"}></button>
     {props.showMenu ?
       <vstack darkBackgroundColor='rgb(26, 40, 45)' lightBackgroundColor='rgb(234, 237, 239)' cornerRadius='medium'>
         <hstack padding="small" onPress={props.resetWorkout}><spacer/><icon lightColor='black' darkColor='white' name="delete" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Reset Workout</text><spacer/></hstack>
-        <hstack padding="small" onPress={props.returnToSummary}><spacer/><icon lightColor='black' darkColor='white' name="refresh" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Return to Intro Summary</text><spacer/></hstack>
+        {/* <hstack padding="small" onPress={props.returnToSummary}><spacer/><icon lightColor='black' darkColor='white' name="refresh" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Return to Intro Summary</text><spacer/></hstack> */}
+        <hstack padding="small" onPress={props.settings}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(exerciseForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(workoutForm)}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>
         {/* <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack> */}

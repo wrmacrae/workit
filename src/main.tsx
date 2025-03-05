@@ -218,7 +218,7 @@ Devvit.addCustomPostType({
       {
         fields: [
           {
-            type: 'number',
+            type: 'string',
             name: 'increment',
             label: "Weight Increment",
             required: true,
@@ -228,8 +228,11 @@ Devvit.addCustomPostType({
         title: "Change Workit Settings",
         acceptLabel: "Save",
       }, async (values) => {
-        setSettings(values)
-        await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(values))
+        if (Number(values.increment) && Number(values.increment) > 0) {
+          const settings = { increment: Number(values.increment) };
+          setSettings(settings)
+          await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(settings))
+        }
       }
     )
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(

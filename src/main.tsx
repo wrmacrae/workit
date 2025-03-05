@@ -15,7 +15,12 @@ Devvit.configure({
   media: true,
 });
 
-function makeWorkoutFromTemplate(templateWorkout: JSONObject) {
+function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletionData) {
+  for (var exercise: ExerciseData of templateWorkout.exercises) {
+    if (lastCompletionData.hasOwnProperty(exercise.name)) {
+      exercise.sets.map((set: SetData) => set.weight = lastCompletionData[exercise.name][0].weight)
+    }
+  }
   return templateWorkout
 }
 
@@ -162,17 +167,22 @@ Devvit.addCustomPostType({
       console.error('Failed to save workout to Redis:', error);
     }
     const asyncDataResult = useAsync(async () => {
-      var startedWorkout = await context.redis.get(keyForWorkout(context.postId!, context.userId!)) // User started a workout already
-      var templateWorkout = await context.redis.get(keyForTemplate(context.postId!))
-      return [startedWorkout, templateWorkout]
+      const startedWorkout = await context.redis.get(keyForWorkout(context.postId!, context.userId!)) // User started a workout already
+      const templateWorkout = await context.redis.get(keyForTemplate(context.postId!))
+      // TODO Don't load completion data for a started workout
+      const rawCompletionData: Record<string, string> = await context.redis.hGetAll(keyForExerciseToLastCompletion(context.userId!))
+      const lastCompletionData = Object.fromEntries(
+        Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
+      );
+      return [startedWorkout, templateWorkout, lastCompletionData]
     }, {
       depends: [context.postId!, context.userId!],
       finally: (loadedData : [string, string], error) => {
-        var [startedWorkout, templateWorkout] = loadedData
+        var [startedWorkout, templateWorkout, lastCompletionData] = loadedData
         if (startedWorkout) {
           setWorkout(JSON.parse(startedWorkout))
         } else {
-          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout))) // Load the workout template
+          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletionData)) // Load the workout template
         }
         setTemplate(JSON.parse(templateWorkout))
       }

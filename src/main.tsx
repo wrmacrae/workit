@@ -7,7 +7,7 @@ import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
 import { strongLifts, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
-import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings } from './keys.js';
+import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion } from './keys.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -41,7 +41,7 @@ function formatExerciseAsComment(exercise: ExerciseData) {
 }
 
 function formatWorkoutAsComment(workout: WorkoutData) {
-  return workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps)).map(formatExerciseAsComment).join("\n\n")
+  return "I did this workout!\n\n" + workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps)).map(formatExerciseAsComment).join("\n\n")
 }
 
 async function addExerciseForUser(context: Devvit.Context, exercise: ExerciseData) {
@@ -222,7 +222,7 @@ Devvit.addCustomPostType({
             name: 'increment',
             label: "Weight Increment",
             required: true,
-            defaultValue: settings.increment
+            defaultValue: String(settings.increment)
           }
         ],
         title: "Change Workit Settings",
@@ -301,6 +301,11 @@ Devvit.addCustomPostType({
       setWorkout(workout)
       setPendingUpdates(prev => [...prev, workout]);
       context.reddit.submitComment({id: context.postId!, text: formatWorkoutAsComment(workout) })
+      const nameToSets = workout.exercises.reduce((acc, exercise: ExerciseData) => {
+        acc[exercise.name] = JSON.stringify(exercise.sets)
+        return acc
+      }, {})
+      context.redis.hSet(keyForExerciseToLastCompletion(context.userId!), nameToSets)
     }
     const toggleEditMode = () => {
       setEditMode(!editMode)

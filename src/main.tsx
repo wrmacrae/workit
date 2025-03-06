@@ -44,6 +44,23 @@ Devvit.addSchedulerJob({
   }
 })
 
+Devvit.addTrigger({
+  event: 'AppInstall',
+  onEvent: async (_, context) => {
+    try {
+      const jobId = await context.scheduler.runJob({
+        cron: '0 12 * * *',
+        name: 'daily-exercise',
+        data: {},
+      });
+      await context.redis.set('jobId', jobId);
+    } catch (e) {
+      console.log('error was not able to schedule:', e);
+      throw e;
+    }
+  },
+});
+
 function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletionData) {
   for (var exercise: ExerciseData of templateWorkout.exercises) {
     if (lastCompletionData.hasOwnProperty(exercise.name)) {

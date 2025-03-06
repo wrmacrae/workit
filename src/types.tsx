@@ -11,6 +11,7 @@ export type ExerciseData = {
   sets: SetData[];
 };
 export type WorkoutData = {
+  title?: string;
   complete?: number;
   author?: string;
   exercises: ExerciseData[];

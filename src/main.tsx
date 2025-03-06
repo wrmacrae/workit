@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, JSONObject, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
+import { Devvit, JobContext, JSONObject, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
 import { RepPicker } from './components/reppicker.js';
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
@@ -14,6 +14,35 @@ Devvit.configure({
   redis: true,
   media: true,
 });
+
+Devvit.addSettings([
+  {
+    name: 'daily-workouts',
+    label: 'JSON List of Daily Workouts to Post',
+    type: 'string',
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-start',
+    label: 'Milliseconds since epoch for first Daily Workout',
+    type: 'number',
+    scope: 'installation',
+  }
+])
+
+function getDaysSince(startTime: number) {
+  const millisecondsSince = Date.now() - startTime;
+  const daysSince = millisecondsSince / 86400000;
+  return Math.floor(daysSince);
+}
+
+Devvit.addSchedulerJob({
+  name: 'daily-exercise',
+  onRun: async (event, context) => {
+    const workouts = JSON.parse(await context.settings.get('daily-workouts'))
+    const workout = workouts[getDaysSince(await context.settings.get('daily-workout-start')) % workouts.length]
+    makeWorkitPostForJob(context, workout.title, workout)
+  }
+})
 
 function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletionData) {
   for (var exercise: ExerciseData of templateWorkout.exercises) {
@@ -38,7 +67,7 @@ function formatExerciseAsComment(exercise: ExerciseData) {
   const setsAsStrings = exercise.sets.filter((set: SetData) => set.reps).map((set: SetData) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
   if (new Set(setsAsStrings).size == 1)
   {
-    comment += `${setsAsStrings.length}x${setsAsStrings[0]}`
+    comment += `${setsAsStrings[0]}x${setsAsStrings.length}`
   } else {
     comment += setsAsStrings.join(", ")
   }
@@ -49,11 +78,11 @@ function formatWorkoutAsComment(workout: WorkoutData) {
   return "I did this workout!\n\n" + workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps)).map(formatExerciseAsComment).join("\n\n")
 }
 
-async function addExerciseForUser(context: Devvit.Context, exercise: ExerciseData) {
+async function addExerciseForUser(context: JobContext, exercise: ExerciseData) {
   await addExercisesForUser(context, {exercises: [exercise]})
 }
 
-async function addExercisesForUser(context: Devvit.Context, workout: WorkoutData) {
+async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
   const fieldValues = workout.exercises.reduce((acc, exercise) => {
     delete exercise.superset
     acc[exercise.name] = JSON.stringify(exercise);
@@ -63,8 +92,13 @@ async function addExercisesForUser(context: Devvit.Context, workout: WorkoutData
 }
 
 export async function makeWorkitPost(context: Devvit.Context, title: string, workout: WorkoutData) {
-  workout.author = context.userId!
   context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
+  const post = await makeWorkitPostForJob(context, title, workout)
+  context.ui.navigateTo(post)
+}
+
+async function makeWorkitPostForJob(context: JobContext, title: string, workout: WorkoutData) {
+  workout.author = context.userId!
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
   const post = await context.reddit.submitPost({
     title: title,
@@ -77,7 +111,7 @@ export async function makeWorkitPost(context: Devvit.Context, title: string, wor
   });
   await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));
   await addExercisesForUser(context, workout)
-  context.ui.navigateTo(post)
+  return post
 }
 
 function showSupersets(context: Devvit.Context, workout: WorkoutData, exerciseIndex: number) {
@@ -134,7 +168,7 @@ Devvit.addCustomPostType({
     const [settings, setSettings] = useState({increment: 2.5})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
-    const [repPickerIndices, setRepPickerIndices] = useState([])
+    const [repPickerIndices, setRepPickerIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)

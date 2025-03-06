@@ -148,7 +148,7 @@ function summarizeExerciseTemplate(exercise: ExerciseData) {
   const setsAsStrings = exercise.sets.map((set) => `${set.target}`)
   if (new Set(setsAsStrings).size == 1)
   {
-    comment += `${exercise.sets.length}x${setsAsStrings[0]}`
+    comment += `${setsAsStrings[0]}x${exercise.sets.length}`
   } else {
     comment += setsAsStrings.join(", ")
   }

@@ -5,7 +5,7 @@ import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
-import { strongLifts, supersetsWorkout, squat } from './examples.js';
+import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion } from './keys.js';
 
@@ -245,7 +245,8 @@ Devvit.addCustomPostType({
       return <text>Error: {asyncDataResult.error.message}</text>;
     }
     const asyncExerciseCollectionResult = useAsync(async () => {
-      addExercisesForUser(context, strongLifts)
+      addExercisesForUser(context, strongLiftsA)
+      addExercisesForUser(context, strongLiftsB)
       addExercisesForUser(context, supersetsWorkout)
       const rawData: Record<string, string> = await context.redis.hGetAll(keyForExerciseCollection(context.userId!));
       return Object.fromEntries(

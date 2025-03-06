@@ -29,11 +29,36 @@ const row: ExerciseData = {
       weight: 45
     })
 };
-export const strongLifts = {
+const overheadpress: ExerciseData = {
+  name: "Overhead Press",
+  image: "overheadpress.gif",
+  sets: Array(5).fill(
+    {
+      target: 5,
+      weight: 45
+    })
+}
+const deadlift: ExerciseData = {
+  name: "Deadlift",
+  image: "deadlift.gif",
+  sets: Array(1).fill(
+    {
+      target: 5,
+      weight: 45
+    })
+}
+export const strongLiftsA = {
   exercises: [
     squat,
     bench,
     row,
+  ]
+};
+export const strongLiftsB = {
+  exercises: [
+    squat,
+    overheadpress,
+    deadlift,
   ]
 };
 export const supersetsWorkout = {
@@ -149,13 +174,26 @@ export const supersetsWorkout = {
 };
 
 Devvit.addMenuItem({
-  label: 'New Strong Lifts',
+  label: 'New Strong Lifts A',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, "Strong Lifts Day 1", strongLifts)
+    console.log(JSON.stringify(strongLiftsA))
+    const post = await makeWorkitPost(context, "Strong Lifts Day A", strongLifts)
+  },
+});
+
+Devvit.addMenuItem({
+  label: 'New Strong Lifts B',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    console.log(JSON.stringify(strongLiftsB))
+    const post = await makeWorkitPost(context, "Strong Lifts Day B", strongLifts)
   },
 });
 

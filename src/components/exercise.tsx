@@ -12,7 +12,6 @@ interface ExerciseSummaryProps {
 interface ExerciseProps {
     exerciseIndex: number
     increment: number
-    onRepsClick: (setIndex: number) => void
     editMode: boolean
     context: Devvit.Context
     setWorkout: (value: SetStateAction<WorkoutData>) => void
@@ -23,16 +22,17 @@ interface ExerciseProps {
     setPendingTemplateUpdates: StateSetter<never[]>
     setExerciseIndex: StateSetter<number>
     repPickerIndices: number[]
+    setRepPickerIndices: StateSetter<number[]>
+    plateCalculatorIndices: number[]
+    setPlateCalculatorIndices: StateSetter<number[]>
 }
 const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
     const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) + props.increment
     props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
-    setIndex++
-    while (setIndex < props.workout.exercises[props.exerciseIndex].sets.length) {
-      if (!props.workout.exercises[props.exerciseIndex].sets[setIndex].reps) {
-        props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
+    for (var set = setIndex + 1; set < props.workout.exercises[props.exerciseIndex].sets.length; set++) {
+      if (!props.workout.exercises[props.exerciseIndex].sets[set].reps) {
+        props.workout.exercises[props.exerciseIndex].sets[set].weight = newWeight
       }
-      setIndex++
     }
     props.setWorkout(props.workout)
     props.setPendingUpdates(prev => [...prev, props.workout]);
@@ -89,7 +89,6 @@ for (var set of exercise.sets) {
 }
 return exercise
 }
-  
 
 function setNumbers(sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var setNumbers = []
@@ -108,7 +107,7 @@ function reps(sets: SetData[], onRepsClick: (setIndex: number) => void, exercise
     var reps = []
     for (let i = 0; i < sets.length; i++)  {
         const editMode = (repPickerIndices.length == 2 && repPickerIndices[0] == exerciseIndex && repPickerIndices[1] == i)
-        reps.push(<Reps reps={sets[i].reps} target={sets[i].target} onPress={() => onRepsClick(i)} editMode={editMode}/>)
+        reps.push(<Reps reps={sets[i].reps} target={String(sets[i].target)} onPress={() => onRepsClick(i)} editMode={editMode}/>)
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -131,7 +130,7 @@ function weights(props: ExerciseProps, sets: SetData[]) {
     var weights = []
     for (let i = 0; i < sets.length; i++)  {
         if (sets[i].weight != undefined) {
-            weights.push(<Weight weight={sets[i].weight} increaseWeight={increaseWeightForIndex(props, i)} decreaseWeight={decreaseWeightForIndex(props, i)}/>)
+            weights.push(<Weight weight={sets[i].weight} increaseWeight={increaseWeightForIndex(props, i)} decreaseWeight={decreaseWeightForIndex(props, i)} onPress={() => props.setPlateCalculatorIndices([props.exerciseIndex, i])}/>)
         } else {
             weights.push(<DisabledWeight />)
         }
@@ -156,6 +155,11 @@ function summarizeExerciseTemplate(exercise: ExerciseData) {
 }
 
 export const Exercise = (props: ExerciseProps): JSX.Element => {
+
+    const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
+      props.setRepPickerIndices([exerciseIndex, setIndex])
+    }
+
     const editForms = [...Array(props.workout.exercises.length).keys()].map((exerciseIndex) => useForm(
         (data) => ({
           fields: [
@@ -220,8 +224,8 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
             <hstack alignment="center middle" gap="small">
-              {setNumbers(exercise.sets, props.onRepsClick)}
-              {reps(exercise.sets, props.onRepsClick, props.exerciseIndex, props.repPickerIndices)}
+              {setNumbers(exercise.sets, onRepsClick(props.exerciseIndex))}
+              {reps(exercise.sets, onRepsClick(props.exerciseIndex), props.exerciseIndex, props.repPickerIndices)}
               {xs(exercise.sets)}
               {weights(props, exercise.sets)}
             </hstack>

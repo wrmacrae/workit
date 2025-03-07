@@ -86,7 +86,7 @@ export const Menu = (props: MenuProps): JSX.Element => {
         }, async (values) => {
           const { title, exercise0, exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9 } = values
           const exercises = exercise0.concat(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6, exercise7, exercise8, exercise9).filter((exercise: ExerciseData) => exercise != null).map((exercise: ExerciseData) => props.exerciseCollection[exercise])
-          await makeWorkitPost(props.context, title, {exercises: exercises})
+          await makeWorkitPost(props.context, {title: title, exercises: exercises})
         }
       );
     return (<vstack padding="small" gap="small">

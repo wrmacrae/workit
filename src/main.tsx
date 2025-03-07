@@ -8,6 +8,7 @@ import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
 import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion } from './keys.js';
+import { PlateCalculator } from './components/platecalculator.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -19,7 +20,7 @@ Devvit.addSettings([
   {
     name: 'daily-workouts',
     label: 'JSON List of Daily Workouts to Post',
-    type: 'string',
+    type: 'paragraph',
     scope: 'installation',
   }, {
     name: 'daily-workout-start',
@@ -40,7 +41,7 @@ Devvit.addSchedulerJob({
   onRun: async (event, context) => {
     const workouts = JSON.parse(await context.settings.get('daily-workouts'))
     const workout = workouts[getDaysSince(await context.settings.get('daily-workout-start')) % workouts.length]
-    makeWorkitPostForJob(context, workout.title, workout)
+    makeWorkitPostForJob(context, workout)
   }
 })
 
@@ -61,10 +62,10 @@ Devvit.addTrigger({
   },
 });
 
-function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletionData) {
+function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: { [name: string]: SetData[] }) {
   for (var exercise: ExerciseData of templateWorkout.exercises) {
-    if (lastCompletionData.hasOwnProperty(exercise.name)) {
-      exercise.sets.map((set: SetData) => set.weight = lastCompletionData[exercise.name][0].weight)
+    if (lastCompletion.hasOwnProperty(exercise.name)) {
+      exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight)
     }
   }
   return templateWorkout
@@ -108,17 +109,17 @@ async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
   await context.redis.hSet(keyForExerciseCollection(context.userId!), fieldValues)
 }
 
-export async function makeWorkitPost(context: Devvit.Context, title: string, workout: WorkoutData) {
+export async function makeWorkitPost(context: Devvit.Context, workout: WorkoutData) {
   context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
-  const post = await makeWorkitPostForJob(context, title, workout)
+  const post = await makeWorkitPostForJob(context, workout)
   context.ui.navigateTo(post)
 }
 
-async function makeWorkitPostForJob(context: JobContext, title: string, workout: WorkoutData) {
+async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
   workout.author = context.userId!
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
   const post = await context.reddit.submitPost({
-    title: title,
+    title: workout.title ?? "New Workout",
     subredditName: subredditName,
     preview: (
       <vstack>
@@ -182,16 +183,18 @@ Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
-    const [settings, setSettings] = useState({increment: 2.5})
+    const [settings, setSettings] = useState({increment: 2.5, barbellWeight: 45})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPickerIndices, setRepPickerIndices] = useState<number[]>([])
+    const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)
     const [template, setTemplate] = useState<WorkoutData>(loadingWorkout)
     const [exerciseCollection, setExerciseCollection] = useState({squat: squat})
     const [pendingUpdates, setPendingUpdates] = useState([]);
+    const [lastCompletion, setLastCompletion] = useState({});
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([]);
     var { error } = useAsync(async () => {
       while (pendingUpdates.length > 0) {
@@ -221,19 +224,20 @@ Devvit.addCustomPostType({
       const startedWorkout = await context.redis.get(keyForWorkout(context.postId!, context.userId!)) // User started a workout already
       const templateWorkout = await context.redis.get(keyForTemplate(context.postId!))
       // TODO Don't load completion data for a started workout
-      const rawCompletionData: Record<string, string> = await context.redis.hGetAll(keyForExerciseToLastCompletion(context.userId!))
+      const rawCompletionData: Record<string, string> = await context.redis.hGetAll(keyForExerciseToLastCompletion(context.userId!) ?? {})
       const lastCompletionData = Object.fromEntries(
         Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
       );
       return [startedWorkout, templateWorkout, lastCompletionData]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string], error) => {
+      finally: (loadedData : [string, string, {[k: string]: any}], error) => {
         var [startedWorkout, templateWorkout, lastCompletionData] = loadedData
+        setLastCompletion(lastCompletionData)
         if (startedWorkout) {
           setWorkout(JSON.parse(startedWorkout))
         } else {
-          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletionData)) // Load the workout template
+          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletion)) // Load the workout template
         }
         setTemplate(JSON.parse(templateWorkout))
       }
@@ -271,9 +275,13 @@ Devvit.addCustomPostType({
     }, {
       depends: [context.userId!],
       finally: (settingsData, error) => {
-        if (settingsData) {
-          setSettings(settingsData)
+        if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
+          settingsData.increment = settings.increment
         }
+        if (!settingsData.hasOwnProperty("barbellWeight") || !settingsData.barbellWeight) {
+          settingsData.barbellWeight = settings.barbellWeight
+        }
+        setSettings(settingsData)
       }
     });
     const settingsForm = useForm(
@@ -285,16 +293,27 @@ Devvit.addCustomPostType({
             label: "Weight Increment",
             required: true,
             defaultValue: String(settings.increment)
-          }
+          },
+          {
+            type: 'string',
+            name: 'barbellWeight',
+            label: "Barbell Weight",
+            required: true,
+            defaultValue: String(settings.barbellWeight)
+          },
         ],
         title: "Change Workit Settings",
         acceptLabel: "Save",
       }, async (values) => {
+        const newSettings = settings
         if (Number(values.increment) && Number(values.increment) > 0) {
-          const settings = { increment: Number(values.increment) };
-          setSettings(settings)
-          await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(settings))
+          newSettings.increment = Number(values.increment)
         }
+        if (Number(values.barbellWeight) && Number(values.barbellWeight) > 0) {
+          newSettings.barbellWeight = Number(values.barbellWeight)
+        }
+        setSettings(settings)
+        await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(settings))
       }
     )
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(
@@ -344,13 +363,9 @@ Devvit.addCustomPostType({
       }
     ));
 
-    const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
-      setRepPickerIndices([exerciseIndex, setIndex])
-    }
-
-    const resetWorkout = () => {
-      setWorkout(makeWorkoutFromTemplate(template))
-      setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template)]);
+    const resetWorkout = (lastCompletion: { [x: string]: SetData[]; }) => () => {
+      setWorkout(makeWorkoutFromTemplate(template, lastCompletion))
+      setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template, lastCompletion)]);
       setShowMenu(false)
       setExerciseIndex(0)
     }
@@ -401,32 +416,32 @@ Devvit.addCustomPostType({
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
               <Exercise
-                exerciseIndex={exerciseIndex} setExerciseIndex={setExerciseIndex}
-                increment={settings.increment}
-                onRepsClick={onRepsClick(exerciseIndex)}
-                editMode={editMode}
                 context={context}
                 workout={workout} setWorkout={setWorkout}
+                exerciseIndex={exerciseIndex} setExerciseIndex={setExerciseIndex}
+                increment={settings.increment}
+                editMode={editMode}
                 template={template} setTemplate={setTemplate}
                 setPendingUpdates={setPendingUpdates}
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
-                repPickerIndices={repPickerIndices}
+                repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
+                plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
                 /> 
               {showSupersets(context, workout, exerciseIndex) ?
               <hstack alignment="center middle">
                 <spacer size="small" />
                 <Exercise
-                  exerciseIndex={exerciseIndex+1} setExerciseIndex={setExerciseIndex}
-                  increment={settings.increment}
-                  onRepsClick={onRepsClick(exerciseIndex+1)}
-                  editMode={editMode}
                   context={context}
                   workout={workout} setWorkout={setWorkout}
+                  exerciseIndex={exerciseIndex+1} setExerciseIndex={setExerciseIndex}
+                  increment={settings.increment}
+                  editMode={editMode}
                   template={template} setTemplate={setTemplate}
                   setPendingUpdates={setPendingUpdates}
                   setPendingTemplateUpdates={setPendingTemplateUpdates}
-                  repPickerIndices={repPickerIndices}
-                /> 
+                  repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
+                  plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
+                  /> 
               </hstack>
               : <hstack/>}
             </hstack>
@@ -442,24 +457,30 @@ Devvit.addCustomPostType({
             }
           </vstack>
         </vstack>
-        {repPickerIndices.length > 1 ? <RepPicker
-                                          maxWidth={context.dimensions!.width}
-                                          repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
-                                          workout={workout} setWorkout={setWorkout}
-                                          setExerciseIndex={setExerciseIndex}
-                                          setPendingUpdates={setPendingUpdates}
-                                        /> : <vstack />}
+        <RepPicker
+          maxWidth={context.dimensions!.width}
+          repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
+          workout={workout} setWorkout={setWorkout}
+          setExerciseIndex={setExerciseIndex}
+          setPendingUpdates={setPendingUpdates}
+        />
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
         <Menu settings={() => context.ui.showForm(settingsForm)} returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
-          resetWorkout={resetWorkout} toggleEditMode={toggleEditMode} editMode={editMode}
+          resetWorkout={resetWorkout(lastCompletion)} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}
         />
         {workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0) ?
         <Intro setRepPickerIndices={setRepPickerIndices} />
         :<vstack/>}
+        <PlateCalculator
+          plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
+          workout={workout} setWorkout={setWorkout}
+          setPendingUpdates={setPendingUpdates}
+          barbellWeight={settings.barbellWeight}
+          />
       </zstack>
     );
   },

@@ -4,6 +4,7 @@ interface WeightProps {
     weight: number
     increaseWeight: () => void
     decreaseWeight: () => void
+    onPress: () => void
 }
 
 export const Weight = (props: WeightProps): JSX.Element => {
@@ -11,7 +12,7 @@ export const Weight = (props: WeightProps): JSX.Element => {
         <hstack backgroundColor='lightgray' cornerRadius="small" padding="small" width="100px" height="40px">
             <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={props.decreaseWeight}><icon name="subtract" size="xsmall" color="black"/></vstack>
             <spacer grow />
-            <text size="xlarge" alignment='center middle' color="black">{props.weight}</text>
+            <text size="xlarge" alignment='center middle' color="black" onPress={props.onPress}>{props.weight}</text>
             <spacer grow />
             <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={props.increaseWeight}><icon name="add" size="xsmall" color="black"/></vstack>
         </hstack>

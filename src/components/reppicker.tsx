@@ -34,6 +34,9 @@ function rowOfButtons(start: number, end: number, setReps: (reps: number) => voi
 }
 
 export const RepPicker = (props: RepPickerProps): JSX.Element => {
+    if (props.repPickerIndices.length < 2) {
+        return <vstack />
+    }
     const closePicker = () => {props.setRepPickerIndices([])}
     const setReps = (reps: number) => {
         props.workout.exercises[props.repPickerIndices[0]].sets[props.repPickerIndices[1]].reps = reps

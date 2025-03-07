@@ -48,6 +48,7 @@ const deadlift: ExerciseData = {
     })
 }
 export const strongLiftsA = {
+  title: "Strong Lifts A",
   exercises: [
     squat,
     bench,
@@ -55,6 +56,7 @@ export const strongLiftsA = {
   ]
 };
 export const strongLiftsB = {
+  title: "Strong Lifts B",
   exercises: [
     squat,
     overheadpress,
@@ -62,6 +64,7 @@ export const strongLiftsB = {
   ]
 };
 export const supersetsWorkout = {
+  title: "Superset Workout",
   exercises: [
     {
       name: "Weighted Lunge",
@@ -181,7 +184,7 @@ Devvit.addMenuItem({
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
     console.log(JSON.stringify(strongLiftsA))
-    const post = await makeWorkitPost(context, "Strong Lifts Day A", strongLifts)
+    const post = await makeWorkitPost(context, strongLiftsA)
   },
 });
 
@@ -193,7 +196,7 @@ Devvit.addMenuItem({
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
     console.log(JSON.stringify(strongLiftsB))
-    const post = await makeWorkitPost(context, "Strong Lifts Day B", strongLifts)
+    const post = await makeWorkitPost(context, strongLiftsB)
   },
 });
 
@@ -204,6 +207,6 @@ Devvit.addMenuItem({
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, "Legs and Abs", supersetsWorkout)
+    const post = await makeWorkitPost(context, supersetsWorkout)
   },
 });

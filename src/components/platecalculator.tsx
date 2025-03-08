@@ -40,7 +40,8 @@ export const PlateCalculator = (props: PlateCalculatorProps): JSX.Element => {
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" onPress={close} lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" />
             <vstack alignment="center middle" height="100%" width="100%">
-                <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium">
+                <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium" gap="small">
+                    <text size="xlarge">Plate Calculator</text>
                     <text>Total Weight: {getTotalWeight(props)}</text>
                     <text>Barbell Weight: {props.barbellWeight}</text>
                     <text>Plates (per side): {getPlatesString(props)}</text>

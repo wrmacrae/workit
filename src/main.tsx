@@ -396,6 +396,10 @@ Devvit.addCustomPostType({
       }
       return grid
     }, [])
+    const advanceExercise = () => {
+      setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))
+      setRepPickerIndices([exerciseIndex, 0])
+    }
     if (summaryMode) {
       return (
         <zstack height="100%" width="100%" alignment="center middle">
@@ -447,8 +451,8 @@ Devvit.addCustomPostType({
             </hstack>
             {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
               (workout.exercises[exerciseIndex].sets.every((set: SetData) => set.reps ?? 0 > 0) ?
-                <button icon="caret-down" appearance="primary" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/> :
-                <button icon="caret-down" onPress={() => setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))}/>
+                <button icon="caret-down" appearance="primary" onPress={advanceExercise}/> :
+                <button icon="caret-down" onPress={advanceExercise}/>
               ) :
               <vstack>
                 {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}

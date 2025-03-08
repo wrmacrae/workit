@@ -7,6 +7,7 @@ import { createExerciseFromForm } from '../main.js';
 
 interface ExerciseSummaryProps {
     exercise: ExerciseData
+    context: Devvit.Context
 }
 
 interface ExerciseProps {
@@ -218,7 +219,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     const exercise = props.workout.exercises[props.exerciseIndex]
     return (
         <vstack gap="small">
-            <vstack cornerRadius='large' height='100%' alignment='middle' onPress={props.editMode ? () => editExercise(props) : undefined} grow><image url={exercise.image} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
+            <vstack cornerRadius='large' height='100%' alignment='middle' onPress={props.editMode ? () => editExercise(props) : undefined} grow><image url={exercise.image} imageWidth={960} imageHeight={540} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
             <hstack alignment="center top">
                 <text size="large" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
@@ -236,7 +237,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
 export const ExerciseSummary = (props: ExerciseSummaryProps): JSX.Element => {
   return (
       <vstack height="100%" width="50%" grow gap="small">
-          <vstack cornerRadius='large' alignment='middle' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} resizeMode='cover' grow></image></vstack>
+          <vstack cornerRadius='large' alignment='middle' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} width={String(props.context.dimensions!.width) + "px"} height={String(props.context.dimensions!.height*0.25)+"px"} resizeMode='cover' grow></image></vstack>
           <text size="large" alignment="center top">{summarizeExerciseTemplate(props.exercise)}</text>
       </vstack>
   )

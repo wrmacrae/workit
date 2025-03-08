@@ -400,7 +400,7 @@ Devvit.addCustomPostType({
       return (
         <zstack height="100%" width="100%" alignment="center middle">
           <vstack grow height="100%" width="100%" alignment="center middle" gap="medium" padding='small' onPress={() => setSummaryMode(false)}>
-            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} />)}</hstack>)}
+            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} context={context} />)}</hstack>)}
           </vstack>
           <vstack width="100%" height="100%" onPress={() => setSummaryMode(false)}></vstack> :
           <button appearance="primary" onPress={() => setSummaryMode(false)}>Do This Workout!</button>
@@ -412,7 +412,7 @@ Devvit.addCustomPostType({
         <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
         <vstack height="100%" width="100%" alignment="center middle">
           <vstack height="100%" width="100%" alignment="center middle" gap="small">
-            {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <spacer height="40px"/>}
+            {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
               <Exercise

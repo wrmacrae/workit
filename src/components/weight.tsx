@@ -9,10 +9,10 @@ interface WeightProps {
 
 export const Weight = (props: WeightProps): JSX.Element => {
     return (
-        <hstack backgroundColor='lightgray' cornerRadius="small" padding="small" width="100px" height="40px" onPress={props.onPress}>
+        <hstack backgroundColor='lightgray' cornerRadius="small" padding="small" width="100px" height="40px">
             <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={props.decreaseWeight}><icon name="subtract" size="xsmall" color="black"/></vstack>
             <spacer grow />
-            <text size="xlarge" alignment='center middle' color="black" onPress={props.onPress}>{props.weight}</text>
+            <vstack onPress={props.onPress}><text size="xlarge" alignment='center middle' color="black" onPress={props.onPress}>{props.weight}</text></vstack>
             <spacer grow />
             <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={props.increaseWeight}><icon name="add" size="xsmall" color="black"/></vstack>
         </hstack>

@@ -112,11 +112,16 @@ async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
 export async function makeWorkitPost(context: Devvit.Context, workout: WorkoutData) {
   context.ui.showToast("Submitting your post - upon completion you'll navigate there.");
   const post = await makeWorkitPostForJob(context, workout)
-  context.ui.navigateTo(post)
+  if (post) {
+    context.ui.navigateTo(post)
+  }
 }
 
 async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
   workout.author = context.userId!
+  if (!workout.exercises || workout.exercises.length == 0) {
+    return
+  }
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
   const post = await context.reddit.submitPost({
     title: workout.title ?? "New Workout",
@@ -183,7 +188,7 @@ Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
-    const [settings, setSettings] = useState({increment: 2.5, barbellWeight: 45})
+    const [settings, setSettings] = useState({increment: 5, barbellWeight: 45})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [repPickerIndices, setRepPickerIndices] = useState<number[]>([])

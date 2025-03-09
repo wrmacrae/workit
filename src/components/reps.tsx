@@ -1,4 +1,4 @@
-import { Devvit, useInterval, useState } from '@devvit/public-api';
+import { Devvit } from '@devvit/public-api';
 
 interface RepsProps {
     reps?: number

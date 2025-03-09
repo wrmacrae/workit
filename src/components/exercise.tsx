@@ -55,7 +55,6 @@ const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () =>
 }
 
 const setRepsToTarget = (props: ExerciseProps, setIndex: number) => {
-  console.log("setting to target")
   props.workout.exercises[props.exerciseIndex].sets[setIndex].reps = props.workout.exercises[props.exerciseIndex].sets[setIndex].target
   props.workout.exercises[props.exerciseIndex].sets[setIndex].repsEnteredTime = Date.now()
   saveWorkout(props);

@@ -8,6 +8,7 @@ import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
+import { Timer } from './components/timer.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -415,6 +416,7 @@ Devvit.addCustomPostType({
     }
     return (
       <zstack height="100%" width="100%" alignment="start top">
+        <Timer workout={workout} />
         <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
         <vstack height="100%" width="100%" alignment="center middle">
           <vstack height="100%" width="100%" alignment="center middle" gap="small">

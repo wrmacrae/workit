@@ -45,7 +45,6 @@ export const PlateCalculator = (props: PlateCalculatorProps): JSX.Element => {
                     <text>Total Weight: {getTotalWeight(props)}</text>
                     <text>Barbell Weight: {props.barbellWeight}</text>
                     <text>Plates (per side): {getPlatesString(props)}</text>
-                    <spacer/>
                     <hstack alignment="center middle" width="100%">
                         <button icon="close" appearance="primary" onPress={close}>Close</button>
                     </hstack>

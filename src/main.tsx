@@ -1,6 +1,5 @@
 // Learn more at developers.reddit.com/docs
 import { Devvit, JobContext, JSONObject, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
-import { RepPicker } from './components/reppicker.js';
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
@@ -191,7 +190,6 @@ Devvit.addCustomPostType({
     const [settings, setSettings] = useState({increment: 5, barbellWeight: 45})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
-    const [repPickerIndices, setRepPickerIndices] = useState<number[]>([])
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [editMode, setEditMode] = useState(false)
@@ -403,7 +401,6 @@ Devvit.addCustomPostType({
     }, [])
     const advanceExercise = () => {
       setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))
-      setRepPickerIndices([exerciseIndex, 0])
     }
     if (summaryMode) {
       return (
@@ -433,7 +430,6 @@ Devvit.addCustomPostType({
                 template={template} setTemplate={setTemplate}
                 setPendingUpdates={setPendingUpdates}
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
-                repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
                 plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
                 /> 
               {showSupersets(context, workout, exerciseIndex) ?
@@ -448,7 +444,6 @@ Devvit.addCustomPostType({
                   template={template} setTemplate={setTemplate}
                   setPendingUpdates={setPendingUpdates}
                   setPendingTemplateUpdates={setPendingTemplateUpdates}
-                  repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
                   plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
                   /> 
               </hstack>
@@ -461,18 +456,12 @@ Devvit.addCustomPostType({
               ) :
               <vstack>
                 {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
-                {allSetsDone(workout) && !workout.complete ? <button appearance="primary" icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button>}
+                {workout.complete ?  <button icon="star-fill">You Did It!</button> :
+                (allSetsDone(workout) && !workout.complete ? <button appearance="primary" icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button>)}
               </vstack>
             }
           </vstack>
         </vstack>
-        <RepPicker
-          maxWidth={context.dimensions!.width}
-          repPickerIndices={repPickerIndices} setRepPickerIndices={setRepPickerIndices}
-          workout={workout} setWorkout={setWorkout}
-          setExerciseIndex={setExerciseIndex}
-          setPendingUpdates={setPendingUpdates}
-        />
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }
@@ -482,7 +471,7 @@ Devvit.addCustomPostType({
           exerciseCollection={exerciseCollection}
         />
         {workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0) ?
-        <Intro setRepPickerIndices={setRepPickerIndices} />
+        <Intro/>
         :<vstack/>}
         <PlateCalculator
           plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}

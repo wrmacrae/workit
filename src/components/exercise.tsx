@@ -22,11 +22,15 @@ interface ExerciseProps {
     setPendingUpdates: StateSetter<never[]>
     setPendingTemplateUpdates: StateSetter<never[]>
     setExerciseIndex: StateSetter<number>
-    repPickerIndices: number[]
-    setRepPickerIndices: StateSetter<number[]>
     plateCalculatorIndices: number[]
     setPlateCalculatorIndices: StateSetter<number[]>
 }
+
+function saveWorkout(props: ExerciseProps) {
+  props.setWorkout(props.workout);
+  props.setPendingUpdates(prev => [...prev, props.workout]);
+}
+
 const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
     const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) + props.increment
     props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
@@ -35,8 +39,7 @@ const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () =>
         props.workout.exercises[props.exerciseIndex].sets[set].weight = newWeight
       }
     }
-    props.setWorkout(props.workout)
-    props.setPendingUpdates(prev => [...prev, props.workout]);
+    saveWorkout(props);
 }
 const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () => {
     const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) - props.increment
@@ -48,9 +51,26 @@ const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () =>
       }
       setIndex++
     }
-    props.setWorkout(props.workout)
-    props.setPendingUpdates(prev => [...prev, props.workout]);
+    saveWorkout(props);
 }
+
+const setRepsToTarget = (props: ExerciseProps, setIndex: number) => {
+  console.log("setting to target")
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].reps = props.workout.exercises[props.exerciseIndex].sets[setIndex].target
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].repsEnteredTime = Date.now()
+  saveWorkout(props);
+}
+const increaseRepsForIndex = (props: ExerciseProps, setIndex: number) => () => {
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].reps = props.workout.exercises[props.exerciseIndex].sets[setIndex].reps! + 1
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].repsEnteredTime = Date.now()
+  saveWorkout(props);
+}
+const decreaseRepsForIndex = (props: ExerciseProps, setIndex: number) => () => {
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].reps = props.workout.exercises[props.exerciseIndex].sets[setIndex].reps! - 1
+  props.workout.exercises[props.exerciseIndex].sets[setIndex].repsEnteredTime = Date.now()
+  saveWorkout(props);
+}
+
 
 const deleteExercise = (props: ExerciseProps) => {
     props.workout.exercises.splice(props.exerciseIndex, 1)
@@ -104,11 +124,11 @@ function setNumbers(sets: SetData[], onRepsClick: (setIndex: number) => void) {
     )
 }
 
-function reps(sets: SetData[], onRepsClick: (setIndex: number) => void, exerciseIndex: number, repPickerIndices: number[]) {
+function reps(props: ExerciseProps, sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var reps = []
+    const nextIndex = sets.findIndex((set: SetData) => set.reps == undefined || set.reps == 0)
     for (let i = 0; i < sets.length; i++)  {
-        const editMode = (repPickerIndices.length == 2 && repPickerIndices[0] == exerciseIndex && repPickerIndices[1] == i)
-        reps.push(<Reps reps={sets[i].reps} target={String(sets[i].target)} onPress={() => onRepsClick(i)} editMode={editMode}/>)
+        reps.push(<Reps reps={sets[i].reps} target={String(sets[i].target)} primary={i==nextIndex} onPress={() => onRepsClick(i)} increaseReps={increaseRepsForIndex(props, i)} decreaseReps={decreaseRepsForIndex(props, i)}/>)
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -157,8 +177,8 @@ function summarizeExerciseTemplate(exercise: ExerciseData) {
 
 export const Exercise = (props: ExerciseProps): JSX.Element => {
 
-    const onRepsClick = (exerciseIndex: number) => (setIndex: number) => {
-      props.setRepPickerIndices([exerciseIndex, setIndex])
+    const onRepsClick = (setIndex: number) => {
+      setRepsToTarget(props, setIndex)
     }
 
     const editForms = [...Array(props.workout.exercises.length).keys()].map((exerciseIndex) => useForm(
@@ -225,8 +245,8 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
                 {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
             </hstack>
             <hstack alignment="center middle" gap="small">
-              {setNumbers(exercise.sets, onRepsClick(props.exerciseIndex))}
-              {reps(exercise.sets, onRepsClick(props.exerciseIndex), props.exerciseIndex, props.repPickerIndices)}
+              {setNumbers(exercise.sets, onRepsClick)}
+              {reps(props, exercise.sets, onRepsClick)}
               {xs(exercise.sets)}
               {weights(props, exercise.sets)}
             </hstack>

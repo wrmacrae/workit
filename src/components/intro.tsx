@@ -1,7 +1,6 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api"
 
 interface IntroProps {
-    setRepPickerIndices: StateSetter<number[]>
 }
 
 export const Intro = (props: IntroProps): JSX.Element => {
@@ -11,7 +10,6 @@ export const Intro = (props: IntroProps): JSX.Element => {
     }
     const close = () => {
         setShowIntro(false)
-        props.setRepPickerIndices([0, 0])
     }
     return (
         <zstack alignment="center middle" height="100%" width="100%">

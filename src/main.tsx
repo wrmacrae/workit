@@ -1,12 +1,12 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, JobContext, JSONObject, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
+import { Devvit, JobContext, JSONObject, Post, RedditAPIClient, RedisClient, SetStateAction, useAsync, useForm, useState } from '@devvit/public-api';
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
 import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
-import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion } from './keys.js';
+import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
 import { Timer } from './components/timer.js';
 
@@ -82,10 +82,11 @@ function allSetsDone(data: WorkoutData) {
 
 function formatExerciseAsComment(exercise: ExerciseData) {
   var comment = `${exercise.name}: `
-  const setsAsStrings = exercise.sets.filter((set: SetData) => set.reps).map((set: SetData) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
-  if (new Set(setsAsStrings).size == 1)
+  const sets: SetData[] = exercise.sets.filter((set: SetData) => set.reps)
+  const setsAsStrings = sets.map((set: SetData) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
+  if (new Set(setsAsStrings).size == 1 && sets.length > 1)
   {
-    comment += `${setsAsStrings[0]}x${setsAsStrings.length}`
+    comment += `${sets[0].reps}x${setsAsStrings.length}` + (sets[0].weight ? ` at ${sets[0].weight}` : ``)
   } else {
     comment += setsAsStrings.join(", ")
   }
@@ -134,7 +135,21 @@ async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
   });
   await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));
   await addExercisesForUser(context, workout)
+  notifyUsers(context, post)
   return post
+}
+
+async function notifyUsers(context: JobContext, post: Post) {
+  // Users who finished last workout 0.0-2.5 days ago
+  const users = await context.redis.zRange(keyForUsersByLastCompletion(), Date.now() - 216000000, Date.now(), { by: "score" })
+  for (const {member} of users) {
+    const username = (await context.reddit.getUserById(member))!.username;
+    context.reddit.sendPrivateMessage({
+      subject: `New Workit Workout: ${post.title}`,
+      text: `You recently completed a workout in Workit, and this new one might be a good fit for you! ${post.url}`,
+      to: username,
+    })
+  }
 }
 
 function showSupersets(context: Devvit.Context, workout: WorkoutData, exerciseIndex: number) {
@@ -387,6 +402,7 @@ Devvit.addCustomPostType({
         return acc
       }, {})
       context.redis.hSet(keyForExerciseToLastCompletion(context.userId!), nameToSets)
+      context.redis.zAdd(keyForUsersByLastCompletion(), {member: context.userId!, score: Date.now()})
     }
     const toggleEditMode = () => {
       setEditMode(!editMode)

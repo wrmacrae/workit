@@ -9,6 +9,8 @@ import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
 import { Timer } from './components/timer.js';
+import { EmptyError } from './components/emptyerror.js';
+import { IncompleteWarning } from './components/incompletewarning.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -78,6 +80,10 @@ function allSetsDone(data: WorkoutData) {
     }
   }
   return true
+}
+
+function workoutIsEmpty(workout: WorkoutData) {
+  return workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0);
 }
 
 function formatExerciseAsComment(exercise: ExerciseData) {
@@ -208,6 +214,8 @@ Devvit.addCustomPostType({
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
+    const [showEmptyError, setShowEmptyError] = useState(false)
+    const [showIncompleteWarning, setShowIncompleteWarning] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)
     const [template, setTemplate] = useState<WorkoutData>(loadingWorkout)
@@ -392,7 +400,8 @@ Devvit.addCustomPostType({
       setSummaryMode(true)
       setShowMenu(false)
     }
-    const completeWorkout = () => {
+
+    const forceCompleteWorkout = () => {
       workout.complete = Date.now()
       setWorkout(workout)
       setPendingUpdates(prev => [...prev, workout]);
@@ -404,6 +413,19 @@ Devvit.addCustomPostType({
       context.redis.hSet(keyForExerciseToLastCompletion(context.userId!), nameToSets)
       context.redis.zAdd(keyForUsersByLastCompletion(), {member: context.userId!, score: Date.now()})
     }
+
+    const completeWorkout = () => {
+      if (workoutIsEmpty(workout)) {
+        setShowEmptyError(true)
+        return
+      }
+      if (!allSetsDone(workout)) {
+        setShowIncompleteWarning(!showIncompleteWarning)
+        return
+      }
+      forceCompleteWorkout()
+    }
+
     const toggleEditMode = () => {
       setEditMode(!editMode)
       setShowMenu(false)
@@ -488,7 +510,9 @@ Devvit.addCustomPostType({
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}
         />
-        {workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0) ?
+        {showEmptyError ? <EmptyError setExerciseIndex={setExerciseIndex} setShowEmptyError={setShowEmptyError} /> : <vstack/>}
+        {showIncompleteWarning ? <IncompleteWarning setExerciseIndex={setExerciseIndex} setShowIncompleteWarning={setShowIncompleteWarning} completeWorkout={forceCompleteWorkout} /> : <vstack/>}
+        {workoutIsEmpty(workout) ?
         <Intro/>
         :<vstack/>}
         <PlateCalculator

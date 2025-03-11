@@ -13,7 +13,7 @@ function restDuration(times: number[]) {
     return Date.now() - Math.max(...times)
 }
 
-function totalDuration(times: number[]) {
+export function totalDuration(times: number[]) {
     return Math.max(...times) - Math.min(...times)
 }
 
@@ -37,7 +37,7 @@ function monospaceString(s: string, color: string) {
 }
 
 export const Timer = (props: TimerProps): JSX.Element => {
-    const times: number[] = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.repsEnteredTime).filter((value) => value != undefined)
+    const times: number[] = setTimes(props.workout)
     if (times.length == 0) {
         return <vstack/>
     }
@@ -58,4 +58,8 @@ export const Timer = (props: TimerProps): JSX.Element => {
             {monospaceString(millisToString(workoutDuration(times)), "neutral-content")}
             {monospaceString(millisToString(restDuration(times)), restColor)}
     </vstack>)
+}
+
+export function setTimes(workout: WorkoutData): number[] {
+    return workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.repsEnteredTime).filter((value) => value != undefined)
 }

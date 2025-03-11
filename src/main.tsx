@@ -11,6 +11,7 @@ import { PlateCalculator } from './components/platecalculator.js';
 import { Timer } from './components/timer.js';
 import { EmptyError } from './components/emptyerror.js';
 import { IncompleteWarning } from './components/incompletewarning.js';
+import { Completion } from './components/completion.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -212,6 +213,7 @@ Devvit.addCustomPostType({
     const [settings, setSettings] = useState({increment: 5, barbellWeight: 45})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
+    const [showCompletion, setShowCompletion] = useState(false)
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [showEmptyError, setShowEmptyError] = useState(false)
@@ -497,7 +499,7 @@ Devvit.addCustomPostType({
               ) :
               <vstack>
                 {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[workout.exercises.length])}/> : <hstack/>}
-                {workout.complete ?  <button icon="star-fill">You Did It!</button> :
+                {workout.complete ?  <button icon="star-fill" appearance='primary' onPress={() => setShowCompletion(true)}>You Did It!</button> :
                 (allSetsDone(workout) && !workout.complete ? <button appearance="primary" icon="checkmark-fill" onPress={completeWorkout}>Complete</button> : <button icon="checkmark-fill" onPress={completeWorkout}>Complete</button>)}
               </vstack>
             }
@@ -522,6 +524,7 @@ Devvit.addCustomPostType({
           setPendingUpdates={setPendingUpdates}
           barbellWeight={settings.barbellWeight}
           />
+        <Completion workout={workout} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
       </zstack>
     );
   },

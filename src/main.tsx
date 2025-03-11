@@ -438,6 +438,7 @@ Devvit.addCustomPostType({
       }
       return grid
     }, [])
+    const supersetDoneness: boolean[][][] = supersetGrid.map((superset: ExerciseData[]) => superset.map((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps != undefined && set.reps > 0)))
     const advanceExercise = () => {
       setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))
     }
@@ -455,7 +456,7 @@ Devvit.addCustomPostType({
     return (
       <zstack height="100%" width="100%" alignment="start top">
         <Timer workout={workout} />
-        <ProgressBar setDonenesses={workout.exercises.map((exercise) => exercise.sets.map((set) => set.reps != undefined && set.reps > 0))} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
+        <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
         <vstack height="100%" width="100%" alignment="center middle">
           <vstack height="100%" width="100%" alignment="center middle" gap="small">
             {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}

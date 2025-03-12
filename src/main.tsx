@@ -213,7 +213,7 @@ Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
-    const [settings, setSettings] = useState({increment: 5, barbellWeight: 45})
+    const [settings, setSettings] = useState<SettingsData>({increment: 5, barbellWeight: 45})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [showCompletion, setShowCompletion] = useState(false)
@@ -260,11 +260,11 @@ Devvit.addCustomPostType({
       const lastCompletionData = Object.fromEntries(
         Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
       );
-      const settings = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
+      const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
       return [startedWorkout, templateWorkout, lastCompletionData, settings]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}, any], error) => {
+      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData], error) => {
         var [startedWorkout, templateWorkout, lastCompletionData, settingsData] = loadedData
         setLastCompletion(lastCompletionData)
         if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {

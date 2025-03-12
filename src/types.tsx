@@ -19,3 +19,7 @@ export type WorkoutData = {
 export const loadingWorkout: WorkoutData = {
   exercises: []
 };
+export type SettingsData = {
+  increment: number
+  barbellWeight: number
+}

@@ -3,7 +3,7 @@ import { Devvit, JobContext, JSONObject, Post, RedditAPIClient, RedisClient, Set
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
-import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
+import { ExerciseData, WorkoutData, SetData, loadingWorkout, SettingsData } from './types.js';
 import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
@@ -65,10 +65,13 @@ Devvit.addTrigger({
   },
 });
 
-function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: { [name: string]: SetData[] }) {
-  for (var exercise: ExerciseData of templateWorkout.exercises) {
-    if (lastCompletion.hasOwnProperty(exercise.name)) {
-      exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight)
+function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: { [name: string]: SetData[] }, settings: SettingsData) {
+  for (var exercise of templateWorkout.exercises) {
+    if (lastCompletion.hasOwnProperty(exercise.name) && lastCompletion[exercise.name].length > 0 && lastCompletion[exercise.name][0].weight) {
+      const previousSets : SetData[] = lastCompletion[exercise.name]
+      if (previousSets.every((set: SetData) => set.reps && set.target && set.reps >= set.target)) {
+        exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight! + settings.increment)
+      }
     }
   }
   return templateWorkout
@@ -257,16 +260,24 @@ Devvit.addCustomPostType({
       const lastCompletionData = Object.fromEntries(
         Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
       );
-      return [startedWorkout, templateWorkout, lastCompletionData]
+      const settings = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
+      return [startedWorkout, templateWorkout, lastCompletionData, settings]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}], error) => {
-        var [startedWorkout, templateWorkout, lastCompletionData] = loadedData
+      finally: (loadedData : [string, string, {[k: string]: any}, any], error) => {
+        var [startedWorkout, templateWorkout, lastCompletionData, settingsData] = loadedData
         setLastCompletion(lastCompletionData)
+        if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
+          settingsData.increment = settings.increment
+        }
+        if (!settingsData.hasOwnProperty("barbellWeight") || !settingsData.barbellWeight) {
+          settingsData.barbellWeight = settings.barbellWeight
+        }
+        setSettings(settingsData)
         if (startedWorkout) {
           setWorkout(JSON.parse(startedWorkout))
         } else {
-          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletion)) // Load the workout template
+          setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletionData, settingsData)) // Load the workout template
         }
         setTemplate(JSON.parse(templateWorkout))
       }
@@ -299,20 +310,6 @@ Devvit.addCustomPostType({
     if (asyncExerciseCollectionResult.error) {
       return <text>Error: {asyncExerciseCollectionResult.error.message}</text>;
     }
-    const asyncSettingsResult = useAsync(async () => {
-      return JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
-    }, {
-      depends: [context.userId!],
-      finally: (settingsData, error) => {
-        if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
-          settingsData.increment = settings.increment
-        }
-        if (!settingsData.hasOwnProperty("barbellWeight") || !settingsData.barbellWeight) {
-          settingsData.barbellWeight = settings.barbellWeight
-        }
-        setSettings(settingsData)
-      }
-    });
     const settingsForm = useForm(
       {
         fields: [
@@ -393,8 +390,9 @@ Devvit.addCustomPostType({
     ));
 
     const resetWorkout = (lastCompletion: { [x: string]: SetData[]; }) => () => {
-      setWorkout(makeWorkoutFromTemplate(template, lastCompletion))
-      setPendingUpdates(prev => [...prev, makeWorkoutFromTemplate(template, lastCompletion)]);
+      const newWorkout = makeWorkoutFromTemplate(template, lastCompletion, settings);
+      setWorkout(newWorkout)
+      setPendingUpdates(prev => [...prev, newWorkout]);
       setShowMenu(false)
       setExerciseIndex(0)
     }

@@ -6,7 +6,7 @@ import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout } from './types.js';
 import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
-import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion } from './keys.js';
+import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
 import { Timer } from './components/timer.js';
 import { EmptyError } from './components/emptyerror.js';
@@ -413,6 +413,7 @@ Devvit.addCustomPostType({
         return acc
       }, {})
       context.redis.hSet(keyForExerciseToLastCompletion(context.userId!), nameToSets)
+      context.redis.zAdd(keyForAllWorkouts(context.userId!), {member: context.postId!, score: Date.now()})
       context.redis.zAdd(keyForUsersByLastCompletion(), {member: context.userId!, score: Date.now()})
     }
 

@@ -457,9 +457,9 @@ Devvit.addCustomPostType({
     return (
       <zstack height="100%" width="100%" alignment="start top">
         <Timer workout={workout} />
-        <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
-        <vstack height="100%" width="100%" alignment="center middle">
-          <vstack height="100%" width="100%" alignment="center middle" gap="small">
+        <hstack height="100%" width="100%" alignment="center middle">
+          <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
+          <vstack grow alignment="center middle" gap="small">
             {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
@@ -503,7 +503,7 @@ Devvit.addCustomPostType({
               </vstack>
             }
           </vstack>
-        </vstack>
+        </hstack>
         {showMenu ?
         <vstack width="100%" height="100%" onPress={() => setShowMenu(false)}></vstack> :
         <vstack/> }

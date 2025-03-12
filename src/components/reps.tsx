@@ -20,6 +20,6 @@ export const Reps = (props: RepsProps): JSX.Element => {
             <spacer grow />
             <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={props.increaseReps}><icon name="add" size="xsmall" color="black"/></vstack>
         </hstack> :
-        <hstack backgroundColor={props.primary ? 'primary-background' : 'lightgray'} cornerRadius="small" padding="small" width="100px" height="40px" alignment='center middle' onPress={props.onPress}><text size="medium" alignment='center middle' color={props.primary ? "neutral-content-strong" : "gray"}>Target {props.target ?? ""}</text></hstack>
+        <hstack backgroundColor={props.primary ? 'primary-background' : 'lightgray'} cornerRadius="small" padding="small" width="100px" height="40px" alignment='center middle' onPress={props.onPress}><text size="medium" alignment='center middle' color={props.primary ? "Global-White" : "gray"}>Target {props.target ?? ""}</text></hstack>
     )
 }

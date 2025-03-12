@@ -33,6 +33,9 @@ export const PlateCalculator = (props: PlateCalculatorProps): JSX.Element => {
             platesUsed.push(nextPlate)
             remainingWeight -= nextPlate
         }
+        if (remainingWeight > 0) {
+            platesUsed.push(remainingWeight)
+        }
         return platesUsed.join(", ")
     }
 

@@ -162,8 +162,11 @@ async function notifyUsers(context: JobContext, post: Post) {
   }
 }
 
-function showSupersets(context: Devvit.Context, workout: WorkoutData, exerciseIndex: number) {
-  return exerciseIndex >= 0 && workout.exercises.length > exerciseIndex + 1 && context.dimensions!.width > 400 && workout.exercises[exerciseIndex].superset;
+function supersetWithNext(context: Devvit.Context, workout: WorkoutData, index: number) {
+  return index >= 0 && workout.exercises.length > index + 1 && context.dimensions!.width > 400 && workout.exercises[index].superset;
+}
+function supersetWithPrevious(context: Devvit.Context, workout: WorkoutData, index: number) {
+  return index > 0 && supersetWithNext(context, workout, index - 1);
 }
 function mergeArrays(...arrays: any[][]) {
   return arrays[0].map((_, i) =>
@@ -432,7 +435,7 @@ Devvit.addCustomPostType({
       setShowMenu(false)
     }
     const supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
-      if (index > 0 && workout.exercises[index - 1].superset) {
+      if (supersetWithPrevious(context, workout, index)) {
         grid[grid.length - 1].push(exercise)
       } else {
         grid.push([exercise])
@@ -441,7 +444,7 @@ Devvit.addCustomPostType({
     }, [])
     const supersetDoneness: boolean[][][] = supersetGrid.map((superset: ExerciseData[]) => superset.map((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps != undefined && set.reps > 0)))
     const advanceExercise = () => {
-      setExerciseIndex(exerciseIndex + (showSupersets(context, workout, exerciseIndex) ? 2 : 1))
+      setExerciseIndex(exerciseIndex + (supersetWithNext(context, workout, exerciseIndex) ? 2 : 1))
     }
     if (summaryMode) {
       return (
@@ -460,7 +463,7 @@ Devvit.addCustomPostType({
         <hstack height="100%" width="100%" alignment="center middle">
           <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
           <vstack grow alignment="center middle" gap="small">
-            {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (showSupersets(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}
+            {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (supersetWithNext(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
             <hstack width="100%" alignment="center middle">
               <Exercise
@@ -474,7 +477,7 @@ Devvit.addCustomPostType({
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
                 plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
                 /> 
-              {showSupersets(context, workout, exerciseIndex) ?
+              {supersetWithNext(context, workout, exerciseIndex) ?
               <hstack alignment="center middle">
                 <spacer size="small" />
                 <Exercise
@@ -491,7 +494,7 @@ Devvit.addCustomPostType({
               </hstack>
               : <hstack/>}
             </hstack>
-            {exerciseIndex + ((showSupersets(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
+            {exerciseIndex + ((supersetWithNext(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
               (workout.exercises[exerciseIndex].sets.every((set: SetData) => set.reps ?? 0 > 0) ?
                 <button icon="caret-down" appearance="primary" onPress={advanceExercise}/> :
                 <button icon="caret-down" onPress={advanceExercise}/>

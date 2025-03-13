@@ -12,6 +12,7 @@ import { Timer } from './components/timer.js';
 import { EmptyError } from './components/emptyerror.js';
 import { IncompleteWarning } from './components/incompletewarning.js';
 import { Completion } from './components/completion.js';
+import { Next } from './components/next.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -460,6 +461,7 @@ Devvit.addCustomPostType({
     return (
       <zstack height="100%" width="100%" alignment="start top">
         <Timer workout={workout} />
+        <Next workout={workout} supersetGrid={supersetGrid} exerciseIndex={exerciseIndex} />
         <hstack height="100%" width="100%" alignment="center middle">
           <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
           <vstack grow alignment="center middle" gap="small">

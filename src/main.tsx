@@ -154,6 +154,10 @@ async function notifyUsers(context: JobContext, post: Post, workout: WorkoutData
   // Users who finished last workout 0.0-2.5 days ago
   const users = await context.redis.zRange(keyForUsersByLastCompletion(), Date.now() - 216000000, Date.now(), { by: "score" })
   for (const {member} of users) {
+    const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(member)) ?? "{}"))
+    if (settings && !settings.notifications) {
+      continue
+    }
     const username = (await context.reddit.getUserById(member))!.username;
     context.reddit.sendPrivateMessage({
       subject: `New in Workit: ${post.title}`,
@@ -225,7 +229,7 @@ Devvit.addCustomPostType({
   name: 'Experience Post',
   height: 'tall',
   render: (context) => {
-    const [settings, setSettings] = useState<SettingsData>({increment: 5, barbellWeight: 45})
+    const [settings, setSettings] = useState<SettingsData>({increment: 5, barbellWeight: 45, notifications: true})
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [showCompletion, setShowCompletion] = useState(false)
@@ -285,6 +289,9 @@ Devvit.addCustomPostType({
         if (!settingsData.hasOwnProperty("barbellWeight") || !settingsData.barbellWeight) {
           settingsData.barbellWeight = settings.barbellWeight
         }
+        if (!settingsData.hasOwnProperty("notifications")) {
+          settingsData.notifications = settings.notifications
+        }
         setSettings(settingsData)
         if (startedWorkout) {
           setWorkout(JSON.parse(startedWorkout))
@@ -339,6 +346,13 @@ Devvit.addCustomPostType({
             required: true,
             defaultValue: String(settings.barbellWeight)
           },
+          {
+            type: 'boolean',
+            name: 'notifications',
+            label: "Receive Notification Messages?",
+            required: true,
+            defaultValue: settings.notifications
+          },
         ],
         title: "Change Workit Settings",
         acceptLabel: "Save",
@@ -350,8 +364,9 @@ Devvit.addCustomPostType({
         if (Number(values.barbellWeight) && Number(values.barbellWeight) > 0) {
           newSettings.barbellWeight = Number(values.barbellWeight)
         }
-        setSettings(settings)
-        await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(settings))
+        newSettings.notifications = values.notifications
+        setSettings(newSettings)
+        await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(newSettings))
       }
     )
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(

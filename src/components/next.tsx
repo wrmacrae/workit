@@ -24,14 +24,23 @@ export const Next = (props: NextProps): JSX.Element => {
     const nextExercises = props.supersetGrid[supersetOfExercise + 1]
     if (nextExercises.length == 1) {
         return (<vstack height="100%" width="100%" alignment="bottom end" padding="small">
-            <text>Next: {nextExercises[0].name}{nextExercises[0].sets[0].weight ? ` at ${nextExercises[0].sets[0].weight}` : ""}</text>
+            <vstack>
+                <text>Next:</text>
+                <text>{nextExercises[0].name}{nextExercises[0].sets[0].weight ? ` at ${nextExercises[0].sets[0].weight}` : ""}</text>
+            </vstack>
         </vstack>)
     }
     return (<vstack height="100%" width="100%" alignment="bottom center" padding="small">
         <hstack width="100%">
-            <text>Next: {nextExercises[0].name}{nextExercises[0].sets[0].weight ? ` at ${nextExercises[0].sets[0].weight}` : ""}</text>
+            <vstack>
+                <text>Next:</text>
+                <text>{nextExercises[0].name}{nextExercises[0].sets[0].weight ? ` at ${nextExercises[0].sets[0].weight}` : ""}</text>
+            </vstack>
             <spacer grow />
-            <text>Next: {nextExercises[1].name}{nextExercises[1].sets[1].weight ? ` at ${nextExercises[1].sets[1].weight}` : ""}</text>
+            <vstack>
+            <text>Next:</text>
+            <text>{nextExercises[1].name}{nextExercises[1].sets[1].weight ? ` at ${nextExercises[1].sets[1].weight}` : ""}</text>
+            </vstack>
         </hstack>
     </vstack>)
 }

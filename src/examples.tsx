@@ -86,8 +86,8 @@ export const supersetsWorkout = {
       ],
     },
     {
-      name: "Spiderman Plank Crunch",
-      image: "spidermanplankcrunch.gif",
+      name: "Plank Crunch",
+      image: "plankcrunch.gif",
       sets: Array(3).fill(
         {
           target: 15,

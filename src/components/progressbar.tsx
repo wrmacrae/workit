@@ -24,20 +24,41 @@ export const ProgressBar = (props: ProgressBarProps): JSX.Element => {
         const selected = supersetOfExercise(exerciseIndexFinder[supersetIndex][exerciseIndex]) == supersetOfExercise(props.exerciseIndex)
         if (done) {
             if (selected) {
-                return "success-plain"
+                return "success-background"
             }
-            return "success-background"
+            return "success-muted"
         }
         if (selected) {
             return "secondary-background-selected"
         }
         return "secondary-background"
     }
+    const COLOR_TO_LIGHT = {
+        "success-plain": "KiwiGreen-600",
+        "success-background": "KiwiGreen-500",
+        "success-muted": "KiwiGreen-400",
+        "secondary-background-selected": "PureGray-300",
+        "secondary-background": "PureGray-150",
+    }
+    const COLOR_TO_DARK = {
+        "success-plain": "KiwiGreen-400",
+        "success-background": "KiwiGreen-600",
+        "success-muted": "KiwiGreen-700",
+        "secondary-background-selected": "PureGray-600",
+        "secondary-background": "PureGray-750",
+    }
+    function lightColorForSet(done: boolean, supersetIndex: number, exerciseIndex: number, selectedExerciseIndex: number) {
+        return COLOR_TO_LIGHT[colorForSet(done, supersetIndex, exerciseIndex, selectedExerciseIndex)]        
+    }
+    function darkColorForSet(done: boolean, supersetIndex: number, exerciseIndex: number, selectedExerciseIndex: number) {
+        return COLOR_TO_DARK[colorForSet(done, supersetIndex, exerciseIndex, selectedExerciseIndex)]        
+    }
     return (<vstack height="100%" alignment="start middle"><vstack alignment="start middle" height="80%" padding="small" gap="small" cornerRadius='small'>
         {props.supersetDoneness.map((superset: boolean[][], supersetIndex: number) => <hstack grow gap="small" onPress={() => props.setExerciseIndex(exerciseIndexFinder[supersetIndex][0])} padding="xsmall" cornerRadius="small" border="thin" borderColor={colorForSet(false, supersetIndex, 0, props.exerciseIndex)}>
             {superset.map((exercise, exerciseIndex) => <vstack grow gap="small">
                 {exercise.map((set) => <vstack cornerRadius="full"
-                    backgroundColor={colorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
+                    lightBackgroundColor={lightColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
+                    darkBackgroundColor={darkColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
                     width={`${width}px`} grow />)}
             </vstack>)}
         </hstack>)}

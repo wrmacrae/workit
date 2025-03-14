@@ -22,4 +22,5 @@ export const loadingWorkout: WorkoutData = {
 export type SettingsData = {
   increment: number
   barbellWeight: number
+  notifications: boolean
 }

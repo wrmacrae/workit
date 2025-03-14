@@ -8,6 +8,7 @@ import { createExerciseFromForm } from '../main.js';
 interface ExerciseSummaryProps {
     exercise: ExerciseData
     context: Devvit.Context
+    supersetGrid: ExerciseData[][]
 }
 
 interface ExerciseProps {
@@ -253,10 +254,15 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     )
 }
 
+function widthOfSupersets(supersetGrid: ExerciseData[][]) {
+  return Math.max(...supersetGrid.map((row: ExerciseData[]) => row.length))
+}
+
 export const ExerciseSummary = (props: ExerciseSummaryProps): JSX.Element => {
+
   return (
-      <vstack height="100%" width="50%" grow gap="small">
-          <vstack cornerRadius='large' alignment='middle' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} width={String(props.context.dimensions!.width) + "px"} height={String(props.context.dimensions!.height*0.25)+"px"} resizeMode='cover' grow></image></vstack>
+      <vstack height="100%" width="100%" grow gap="small">
+          <vstack cornerRadius='large' alignment='middle center' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} width={String(props.context.dimensions!.width/widthOfSupersets(props.supersetGrid)) + "px"} height={String(props.context.dimensions!.height*0.1)+"px"} resizeMode='cover' grow></image></vstack>
           <text size="large" alignment="center top">{summarizeExerciseTemplate(props.exercise)}</text>
       </vstack>
   )

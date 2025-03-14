@@ -146,18 +146,18 @@ async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
   });
   await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));
   await addExercisesForUser(context, workout)
-  notifyUsers(context, post)
+  notifyUsers(context, post, workout)
   return post
 }
 
-async function notifyUsers(context: JobContext, post: Post) {
+async function notifyUsers(context: JobContext, post: Post, workout: WorkoutData) {
   // Users who finished last workout 0.0-2.5 days ago
   const users = await context.redis.zRange(keyForUsersByLastCompletion(), Date.now() - 216000000, Date.now(), { by: "score" })
   for (const {member} of users) {
     const username = (await context.reddit.getUserById(member))!.username;
     context.reddit.sendPrivateMessage({
-      subject: `New Workit Workout: ${post.title}`,
-      text: `You recently completed a workout in Workit, and this new one might be a good fit for you! ${post.url}`,
+      subject: `New in Workit: ${post.title}`,
+      text: `Exercises: ${workout.exercises.map((exercise => exercise.name)).join(", ")}\n\nThis new workout might be a good fit for you! ${post.url}`,
       to: username,
     })
   }
@@ -173,6 +173,14 @@ function mergeArrays(...arrays: any[][]) {
   return arrays[0].map((_, i) =>
       Object.assign({}, ...arrays.map(arr => arr[i]))
   );
+}
+
+function convertTo2DArray(array: any[]) {
+  const result = [];
+  for (let i = 0; i < array.length; i += 2) {
+    result.push(array.slice(i, i + 2));
+  }
+  return result;
 }
 
 function createSetsFromInputStrings(sets: number, targets: string, weights: string | undefined) {
@@ -435,7 +443,7 @@ Devvit.addCustomPostType({
       setEditMode(!editMode)
       setShowMenu(false)
     }
-    const supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
+    var supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
       if (supersetWithPrevious(context, workout, index)) {
         grid[grid.length - 1].push(exercise)
       } else {
@@ -448,10 +456,13 @@ Devvit.addCustomPostType({
       setExerciseIndex(exerciseIndex + (supersetWithNext(context, workout, exerciseIndex) ? 2 : 1))
     }
     if (summaryMode) {
+      if (supersetGrid.every((row) => row.length <= 1) && workout.exercises.length > 4) {
+        supersetGrid = convertTo2DArray(workout.exercises)
+      }
       return (
         <zstack height="100%" width="100%" alignment="center middle">
           <vstack grow height="100%" width="100%" alignment="center middle" gap="medium" padding='small' onPress={() => setSummaryMode(false)}>
-            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} context={context} />)}</hstack>)}
+            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} context={context} supersetGrid={supersetGrid} />)}</hstack>)}
           </vstack>
           <vstack width="100%" height="100%" onPress={() => setSummaryMode(false)}></vstack> :
           <button appearance="primary" onPress={() => setSummaryMode(false)}>Do This Workout!</button>

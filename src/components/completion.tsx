@@ -105,7 +105,7 @@ export const Completion = (props: CompletionProps): JSX.Element => {
                     <text wrap>{tip(props.workout)}</text>
                     <spacer/>
                     <text>Did you know?</text>
-                    <text>{didYouKnow(props.workout)}</text>
+                    <text wrap>{didYouKnow(props.workout)}</text>
                     <text></text>
                 </vstack>
             </vstack>

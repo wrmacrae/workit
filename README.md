@@ -11,8 +11,12 @@ Note: notation "5x3" means doing 5 reps per set for a total of 3 sets.
 - If you change weights of a set, all of the following incomplete sets of that exercise automatically take on the new weight.
 - Click on a weight to see a Plate Calculator for loading a barbell
 - The menu in the top left allows you to reset your progress, or change personal settings like your weight increment and barbell weight.
+- After completing a workout, the You Did It button shows some motivating stats and info.
+- You will get messages when new workouts show up after you recently completed a workout in the same subreddit. There is a setting to disable these.
+- Weights are automatically set based on your most recently completion of the same exercise. You will get the same weight plus your increment if you hit all of the target reps, and otherwise you will get the previous weight.
+- Once you enter reps for a set, timers in the upper-right will keep track of the total workout time, and the time since you last entered reps for a set.
 
-Note: Every Redditor sees their own personal progress, sets, and weights for a workout. Your changes appear within the app, but do not affect the post that other users will see. The only shared information with other users is when you Complete the workout, which submits a comment below the post.
+Note: Each Redditor sees their own personal progress, sets, and weights for a workout separately. Your changes appear within the app, but do not affect the post that other users will see. The only shared information with other users is when you Complete the workout, which submits a comment below the post detailing what you did.
 
 #### To Author Workouts
 - Mods of a sub have buttons in the subreddit menu to create some example workouts

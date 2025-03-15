@@ -7,7 +7,6 @@ import { createExerciseFromForm } from '../main.js';
 
 interface ExerciseSummaryProps {
     exercise: ExerciseData
-    context: Devvit.Context
     supersetGrid: ExerciseData[][]
 }
 
@@ -262,7 +261,7 @@ export const ExerciseSummary = (props: ExerciseSummaryProps): JSX.Element => {
 
   return (
       <vstack height="100%" width="100%" grow gap="small">
-          <vstack cornerRadius='large' alignment='middle center' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} width={String(props.context.dimensions!.width/widthOfSupersets(props.supersetGrid)) + "px"} height={String(props.context.dimensions!.height*0.1)+"px"} resizeMode='cover' grow></image></vstack>
+          <vstack cornerRadius='large' alignment='middle center' grow><image url={props.exercise.image}  imageWidth={960} imageHeight={540} width={"100%"} height={"100%"} resizeMode='cover' grow></image></vstack>
           <text size="large" alignment="center top">{summarizeExerciseTemplate(props.exercise)}</text>
       </vstack>
   )

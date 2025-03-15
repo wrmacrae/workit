@@ -13,6 +13,7 @@ import { EmptyError } from './components/emptyerror.js';
 import { IncompleteWarning } from './components/incompletewarning.js';
 import { Completion } from './components/completion.js';
 import { Next } from './components/next.js';
+import { Summary } from './components/summary.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -113,7 +114,7 @@ async function addExerciseForUser(context: JobContext, exercise: ExerciseData) {
 }
 
 async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
-  const fieldValues = workout.exercises.reduce((acc, exercise) => {
+  const fieldValues = JSON.parse(JSON.stringify(workout.exercises)).reduce((acc, exercise: ExerciseData) => {
     delete exercise.superset
     acc[exercise.name] = JSON.stringify(exercise);
     return acc;
@@ -139,9 +140,7 @@ async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
     title: workout.title ?? "New Workout",
     subredditName: subredditName,
     preview: (
-      <vstack>
-        <text color="black white">Loading workout...</text>
-        </vstack>
+      <Summary supersetGrid={workout.exercises.map((exercise) => [exercise])} setSummaryMode={() => console.log("Not logged in")}/>
     ),
   });
   await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));
@@ -173,18 +172,21 @@ function supersetWithNext(context: Devvit.Context, workout: WorkoutData, index: 
 function supersetWithPrevious(context: Devvit.Context, workout: WorkoutData, index: number) {
   return index > 0 && supersetWithNext(context, workout, index - 1);
 }
+function makeSupersetGrid(workout: WorkoutData, context: Devvit.Context): ExerciseData[][] {
+  return workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
+    if (supersetWithPrevious(context, workout, index)) {
+      grid[grid.length - 1].push(exercise);
+    } else {
+      grid.push([exercise]);
+    }
+    return grid;
+  }, []);
+}
+
 function mergeArrays(...arrays: any[][]) {
   return arrays[0].map((_, i) =>
       Object.assign({}, ...arrays.map(arr => arr[i]))
   );
-}
-
-function convertTo2DArray(array: any[]) {
-  const result = [];
-  for (let i = 0; i < array.length; i += 2) {
-    result.push(array.slice(i, i + 2));
-  }
-  return result;
 }
 
 function createSetsFromInputStrings(sets: number, targets: string, weights: string | undefined) {
@@ -415,7 +417,6 @@ Devvit.addCustomPostType({
         setPendingTemplateUpdates(prev => [...prev, template])
       }
     ));
-
     const resetWorkout = (lastCompletion: { [x: string]: SetData[]; }) => () => {
       const newWorkout = makeWorkoutFromTemplate(template, lastCompletion, settings);
       setWorkout(newWorkout)
@@ -453,35 +454,19 @@ Devvit.addCustomPostType({
       }
       forceCompleteWorkout()
     }
-
+    
     const toggleEditMode = () => {
       setEditMode(!editMode)
       setShowMenu(false)
     }
-    var supersetGrid: ExerciseData[][] = workout.exercises.reduce((grid: ExerciseData[][], exercise: ExerciseData, index: number) => {
-      if (supersetWithPrevious(context, workout, index)) {
-        grid[grid.length - 1].push(exercise)
-      } else {
-        grid.push([exercise])
-      }
-      return grid
-    }, [])
+    var supersetGrid: ExerciseData[][] = makeSupersetGrid(workout, context)
     const supersetDoneness: boolean[][][] = supersetGrid.map((superset: ExerciseData[]) => superset.map((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps != undefined && set.reps > 0)))
     const advanceExercise = () => {
       setExerciseIndex(exerciseIndex + (supersetWithNext(context, workout, exerciseIndex) ? 2 : 1))
     }
     if (summaryMode) {
-      if (supersetGrid.every((row) => row.length <= 1) && workout.exercises.length > 4) {
-        supersetGrid = convertTo2DArray(workout.exercises)
-      }
       return (
-        <zstack height="100%" width="100%" alignment="center middle">
-          <vstack grow height="100%" width="100%" alignment="center middle" gap="medium" padding='small' onPress={() => setSummaryMode(false)}>
-            {supersetGrid.map((row) => <hstack grow width="100%" alignment="center middle" gap="small">{row.map((exercise: ExerciseData) => <ExerciseSummary exercise={exercise} context={context} supersetGrid={supersetGrid} />)}</hstack>)}
-          </vstack>
-          <vstack width="100%" height="100%" onPress={() => setSummaryMode(false)}></vstack> :
-          <button appearance="primary" onPress={() => setSummaryMode(false)}>Do This Workout!</button>
-        </zstack>
+        <Summary supersetGrid={supersetGrid} setSummaryMode={setSummaryMode} />
       )
     }
     return (

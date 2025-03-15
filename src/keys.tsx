@@ -16,7 +16,6 @@ export function keyForExerciseToLastCompletion(userId: string) {
 export function keyForUsersByLastCompletion() {
   return `users-by-last-completion`
 }
-//TODO: Store this stuff
 export function keyForAllWorkouts(userId: string) {
   return `all-workouts-for-user-${userId}`;
 }

@@ -4,6 +4,7 @@ import { setTimes, totalDuration } from "./timer.js"
 
 interface CompletionProps {
     workout: WorkoutData
+    workouts: number
     showCompletion: boolean
     setShowCompletion: StateSetter<boolean>
 }
@@ -43,29 +44,34 @@ const STATS = [
     totalWeight,
     caloriesBurnt,
     activeTime,
-    targetRepsReached,    
+    targetRepsReached,
+    workouts,
 ]
 
-function totalWeight(workout: WorkoutData) {
-    return `Total Weight Lifted: ${workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.reps! * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)}`;
+function totalWeight(props: CompletionProps) {
+    return `Total Weight Lifted: ${props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.reps! * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)}`;
 }
 
-function caloriesBurnt(workout: WorkoutData) {
-    var activeTime = totalActiveTime(workout) + 120000
+function caloriesBurnt(props: CompletionProps) {
+    var activeTime = totalActiveTime(props.workout) + 120000
     const calories = Math.floor(7.5 * activeTime / 60000)
     return `Approximate Calories Burnt: ${calories}`
 }
 
-function activeTime(workout: WorkoutData) {
-    const time = totalActiveTime(workout)
-    const percent = Math.round(totalActiveTime(workout) / totalDuration(setTimes(workout)) * 100)
+function activeTime(props: CompletionProps) {
+    const time = totalActiveTime(props.workout)
+    const percent = Math.round(totalActiveTime(props.workout) / totalDuration(setTimes(props.workout)) * 100)
     return `Active Time: ${time} (${percent}%)`
 }
 
-function targetRepsReached(workout: WorkoutData) {
-    const sets = workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).filter((set: SetData) => set.reps && set.reps >= set.target!).length
-    const percent = Math.round(sets / workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).length * 100)
+function targetRepsReached(props: CompletionProps) {
+    const sets = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).filter((set: SetData) => set.reps && set.reps >= set.target!).length
+    const percent = Math.round(sets / props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).length * 100)
     return `Target reps reached on ${sets} sets (${percent}%).`
+}
+
+function workouts(props: CompletionProps) {
+    return `You have done ${props.workouts} workouts in this subreddit!`
 }
 
 function totalActiveTime(workout: WorkoutData) {
@@ -86,8 +92,8 @@ function tip(workout: WorkoutData) {
     return TIPS[Math.min(...setTimes(workout)) % TIPS.length]
 }
 
-function stat(workout: WorkoutData) {
-    return STATS[Math.min(...setTimes(workout)) % STATS.length](workout)
+function stat(props: CompletionProps) {
+    return STATS[Math.min(...setTimes(props.workout)) % STATS.length](props)
 }
 
 export const Completion = (props: CompletionProps): JSX.Element => {
@@ -99,7 +105,7 @@ export const Completion = (props: CompletionProps): JSX.Element => {
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowCompletion(false)} />
             <vstack alignment="center middle" height="100%" width="100%">
                 <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium">
-                    <text wrap>{stat(props.workout)}</text>
+                    <text wrap>{stat(props)}</text>
                     <spacer/>
                     <text>Tip</text>
                     <text wrap>{tip(props.workout)}</text>

@@ -1,10 +1,11 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api"
 
 interface IntroProps {
+    workouts: number
 }
 
 export const Intro = (props: IntroProps): JSX.Element => {
-    const [showIntro, setShowIntro] = useState(true)
+    const [showIntro, setShowIntro] = useState(props.workouts <= 3)
     if (!showIntro) {
         return <vstack />
     }

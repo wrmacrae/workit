@@ -183,7 +183,6 @@ Devvit.addMenuItem({
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
-    console.log(JSON.stringify(strongLiftsA))
     const post = await makeWorkitPost(context, strongLiftsA)
   },
 });
@@ -195,7 +194,6 @@ Devvit.addMenuItem({
   onPress: async (_event, context) => {
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
-    console.log(JSON.stringify(strongLiftsB))
     const post = await makeWorkitPost(context, strongLiftsB)
   },
 });

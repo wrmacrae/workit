@@ -243,9 +243,10 @@ Devvit.addCustomPostType({
     const [workout, setWorkout] = useState<WorkoutData>(loadingWorkout)
     const [template, setTemplate] = useState<WorkoutData>(loadingWorkout)
     const [exerciseCollection, setExerciseCollection] = useState({squat: squat})
-    const [pendingUpdates, setPendingUpdates] = useState([]);
-    const [lastCompletion, setLastCompletion] = useState({});
-    const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([]);
+    const [pendingUpdates, setPendingUpdates] = useState([])
+    const [lastCompletion, setLastCompletion] = useState({})
+    const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
+    const [workouts, setWorkouts] = useState(0)
     var { error } = useAsync(async () => {
       while (pendingUpdates.length > 0) {
         const nextUpdate = pendingUpdates.shift()
@@ -279,11 +280,12 @@ Devvit.addCustomPostType({
         Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
       );
       const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
-      return [startedWorkout, templateWorkout, lastCompletionData, settings]
+      const workouts = await context.redis.zCard(keyForAllWorkouts(context.userId ?? "ANONYMOUS"))
+      return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData], error) => {
-        var [startedWorkout, templateWorkout, lastCompletionData, settingsData] = loadedData
+      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, number], error) => {
+        var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts] = loadedData
         setLastCompletion(lastCompletionData)
         if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
           settingsData.increment = settings.increment
@@ -301,6 +303,7 @@ Devvit.addCustomPostType({
           setWorkout(makeWorkoutFromTemplate(JSON.parse(templateWorkout), lastCompletionData, settingsData)) // Load the workout template
         }
         setTemplate(JSON.parse(templateWorkout))
+        setWorkouts(workouts)
       }
     });
     if (asyncDataResult.loading) {
@@ -531,7 +534,7 @@ Devvit.addCustomPostType({
         {showEmptyError ? <EmptyError setExerciseIndex={setExerciseIndex} setShowEmptyError={setShowEmptyError} /> : <vstack/>}
         {showIncompleteWarning ? <IncompleteWarning setExerciseIndex={setExerciseIndex} setShowIncompleteWarning={setShowIncompleteWarning} completeWorkout={forceCompleteWorkout} /> : <vstack/>}
         {workoutIsEmpty(workout) ?
-        <Intro/>
+        <Intro workouts={workouts}/>
         :<vstack/>}
         <PlateCalculator
           plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
@@ -539,7 +542,7 @@ Devvit.addCustomPostType({
           setPendingUpdates={setPendingUpdates}
           barbellWeight={settings.barbellWeight}
           />
-        <Completion workout={workout} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
+        <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
       </zstack>
     );
   },

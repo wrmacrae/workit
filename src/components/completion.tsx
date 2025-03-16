@@ -30,13 +30,13 @@ const TIPS = [
     "Do some stretching to improve mobility.",
     "Tell someone what you did!",
     "Congratulate yourself. Be brave and say it out loud!",
-    "Share how your workout went in the comments. Making health social helps you learn and stay consistent, and reflection is how you learn and improve.",
-    "Alternate cardio and strength. If this workout had you winded, consider something slower paced next. If you're sweating right now, consider some slower-paced lifting next.",
-    "Try to exercise every 2 or 3 days. You can do cardio more frequently, but your muscles do need time to recover and grow.",
+    "Share how your workout went in the comments. Making health social helps you stay consistent.",
+    "Alternate cardio and strength. Blood flow from cardio aids in muscle recovery from strength.",
+    "Try to exercise every 2 or 3 days. Your muscles need time to recover and grow.",
     "Get some feedback! Do a form check on Reddit or have a friend spot you.",
     "Now's a great time to research an exercise or muscle you were thinking about.",
-    "Treat yourself! Buy or do something, big or small, that makes you feel rewarded. Maybe gear that will help next time or a healthy snack?",
-    "Sleep is a critical part of recovery. Make sure you're getting 7-9 hours of sleep, so that you get all the benefit of your hard work.",
+    "Treat yourself! Buy or do something, big or small, as a reward. Maybe gear or a healthy snack?",
+    "Sleep is critical for recovery. Take 7-9 hours, so that you get all the benefit of your hard work.",
     "Try asking a question in the comments!",
 ]
 

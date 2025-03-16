@@ -246,7 +246,7 @@ Devvit.addCustomPostType({
     const [pendingUpdates, setPendingUpdates] = useState([])
     const [lastCompletion, setLastCompletion] = useState({})
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
-    const [workouts, setWorkouts] = useState(0)
+    const [workouts, setWorkouts] = useState<{member: string; score: number;}[]>([])
     var { error } = useAsync(async () => {
       while (pendingUpdates.length > 0) {
         const nextUpdate = pendingUpdates.shift()
@@ -280,11 +280,11 @@ Devvit.addCustomPostType({
         Object.entries(rawCompletionData).map(([key, value]) => [key, JSON.parse(value)])
       );
       const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
-      const workouts = await context.redis.zCard(keyForAllWorkouts(context.userId ?? "ANONYMOUS"))
+      const workouts = await context.redis.zRange(keyForAllWorkouts(context.userId ?? "ANONYMOUS"), 0, Date.now())
       return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, number], error) => {
+      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, {member: string; score: number;}[]], error) => {
         var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts] = loadedData
         setLastCompletion(lastCompletionData)
         if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
@@ -534,7 +534,7 @@ Devvit.addCustomPostType({
         {showEmptyError ? <EmptyError setExerciseIndex={setExerciseIndex} setShowEmptyError={setShowEmptyError} /> : <vstack/>}
         {showIncompleteWarning ? <IncompleteWarning setExerciseIndex={setExerciseIndex} setShowIncompleteWarning={setShowIncompleteWarning} completeWorkout={forceCompleteWorkout} /> : <vstack/>}
         {workoutIsEmpty(workout) ?
-        <Intro workouts={workouts}/>
+        <Intro workouts={workouts.length}/>
         :<vstack/>}
         <PlateCalculator
           plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}

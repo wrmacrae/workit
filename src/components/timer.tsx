@@ -17,7 +17,7 @@ export function totalDuration(times: number[]) {
     return Math.max(...times) - Math.min(...times)
 }
 
-function millisToString(time: number) {
+export function millisToString(time: number) {
     const date = new Date(Date.UTC(0,0,0,0,0,0,time))
     var parts = [
       Math.floor(time / 3600000),

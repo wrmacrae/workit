@@ -1,10 +1,10 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api"
 import { ExerciseData, SetData, WorkoutData } from "../types.js"
-import { setTimes, totalDuration } from "./timer.js"
+import { millisToString, setTimes, totalDuration } from "./timer.js"
 
 interface CompletionProps {
     workout: WorkoutData
-    workouts: number
+    workouts: {member: string; score: number;}[]
     showCompletion: boolean
     setShowCompletion: StateSetter<boolean>
 }
@@ -41,15 +41,18 @@ const TIPS = [
 ]
 
 const STATS = [
-    totalWeight,
-    caloriesBurnt,
-    activeTime,
-    targetRepsReached,
     workouts,
+    totalWeight,
+    activeTime,
+    caloriesBurnt,
+    streak,
+    targetRepsReached,
 ]
 
 function totalWeight(props: CompletionProps) {
-    return `Total Weight Lifted: ${props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.reps! * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)}`;
+    const total = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.reps! * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)
+    if (!total) {return}
+    return `Total Weight Lifted: ${total}`;
 }
 
 function caloriesBurnt(props: CompletionProps) {
@@ -60,18 +63,45 @@ function caloriesBurnt(props: CompletionProps) {
 
 function activeTime(props: CompletionProps) {
     const time = totalActiveTime(props.workout)
+    if (!time) {return}
     const percent = Math.round(totalActiveTime(props.workout) / totalDuration(setTimes(props.workout)) * 100)
-    return `Active Time: ${time} (${percent}%)`
+    return `Active Time: ${millisToString(time)} (${percent}%)`
 }
 
 function targetRepsReached(props: CompletionProps) {
     const sets = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).filter((set: SetData) => set.reps && set.reps >= set.target!).length
+    if (!sets) {return}
     const percent = Math.round(sets / props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).length * 100)
     return `Target reps reached on ${sets} sets (${percent}%).`
 }
 
 function workouts(props: CompletionProps) {
-    return `You have done ${props.workouts} workouts in this subreddit!`
+    if (props.workouts.length <= 1) {return}
+    return `You have done ${props.workouts.length} workouts in this subreddit!`
+}
+
+function streak(props: CompletionProps) {
+    const [weeks, workoutCount] = calculateStreak(props.workouts)
+    if (weeks <= 1) {return}
+    return `You completed exercises for ${weeks} weeks straight (a streak of ${workoutCount} workouts).`
+}
+
+function calculateStreak(workouts: {member: string; score: number;}[]) {
+    const completionTimes = workouts.map((workout) => workout.score)
+    var endOfWeek = Date.now()
+    var workoutCount = 0
+    var weeks = 0
+    const WEEK = 604800000
+    while (true) {
+        const currentWeek = completionTimes.filter((t) => t >= endOfWeek - WEEK && t < endOfWeek)
+        if (currentWeek.length == 0) {
+            break
+        }
+        workoutCount += currentWeek.length
+        weeks += 1
+        endOfWeek -= WEEK
+    }
+    return [weeks, workoutCount]
 }
 
 function totalActiveTime(workout: WorkoutData) {
@@ -93,7 +123,14 @@ function tip(workout: WorkoutData) {
 }
 
 function stat(props: CompletionProps) {
-    return STATS[Math.min(...setTimes(props.workout)) % STATS.length](props)
+    var i = 0
+    while (true) {
+        let maybeStat = STATS[(Math.min(...setTimes(props.workout)) + i) % STATS.length](props)
+        if (maybeStat) {
+            return maybeStat
+        }
+        i++
+    }
 }
 
 export const Completion = (props: CompletionProps): JSX.Element => {

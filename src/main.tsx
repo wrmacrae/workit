@@ -76,6 +76,14 @@ function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: {
       }
     }
   }
+  for (var exercise of templateWorkout.optionalExercises ?? []) {
+    if (lastCompletion.hasOwnProperty(exercise.name) && lastCompletion[exercise.name].length > 0 && lastCompletion[exercise.name][0].weight) {
+      const previousSets : SetData[] = lastCompletion[exercise.name]
+      if (previousSets.every((set: SetData) => set.reps && set.target && set.reps >= set.target)) {
+        exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight! + settings.increment)
+      }
+    }
+  }
   return templateWorkout
 }
 
@@ -120,6 +128,14 @@ async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
     return acc;
 }, {});
   await context.redis.hSet(keyForExerciseCollection(context.userId!), fieldValues)
+  if (workout.optionalExercises && workout.optionalExercises.length > 0) {
+    const optionalFieldValues = JSON.parse(JSON.stringify(workout.optionalExercises)).reduce((acc, exercise: ExerciseData) => {
+      delete exercise.superset
+      acc[exercise.name] = JSON.stringify(exercise);
+      return acc;
+    }, {});
+    await context.redis.hSet(keyForExerciseCollection(context.userId!), optionalFieldValues)
+  }
 }
 
 export async function makeWorkitPost(context: Devvit.Context, workout: WorkoutData) {
@@ -374,6 +390,26 @@ Devvit.addCustomPostType({
         await context.redis.set(keyForSettings(context.userId!) ?? "", JSON.stringify(newSettings))
       }
     )
+    const optionalForm = useForm(
+      {
+        fields: [
+          {
+            type: 'select',
+            name: 'exerciseName',
+            label: 'Optional Exercise',
+            required: true,
+            options: workout.optionalExercises.map(exercise => ({ label: exercise.name, value: exercise.name }))
+          }
+        ],
+        title: 'Add an Optional Exercise',
+        acceptLabel: 'Add to Workout'
+      }, async (values) => {
+        const optionIndex = workout.optionalExercises.findIndex(exercise => exercise.name == values.exerciseName)
+        workout.exercises.push(...workout.optionalExercises.splice(optionIndex, 1))
+        setWorkout(workout)
+        setPendingUpdates(prev => [...prev, workout]);
+      }
+    )
     const insertExerciseForms = [...Array(workout.exercises.length+1).keys()].map((exerciseIndex) => useForm(
       {
         fields: [
@@ -475,7 +511,7 @@ Devvit.addCustomPostType({
     return (
       <zstack height="100%" width="100%" alignment="start top">
         <Timer workout={workout} exerciseIndex={exerciseIndex} />
-        <Next workout={workout} supersetGrid={supersetGrid} exerciseIndex={exerciseIndex} />
+        <Next workout={workout} supersetGrid={supersetGrid} exerciseIndex={exerciseIndex} addExercises={() => context.ui.showForm(optionalForm)}/>
         <hstack height="100%" width="100%" alignment="center middle">
           <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
           <vstack grow alignment="center middle" gap="small">

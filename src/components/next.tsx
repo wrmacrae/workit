@@ -5,6 +5,7 @@ interface NextProps {
     workout: WorkoutData
     supersetGrid: ExerciseData[][]
     exerciseIndex: number
+    addExercises: () => void
 }
 
 export const Next = (props: NextProps): JSX.Element => {
@@ -19,6 +20,11 @@ export const Next = (props: NextProps): JSX.Element => {
     }
     const supersetOfExercise = exerciseIndexFinder.findIndex((superset: number[]) => superset.findIndex((e) => e==props.exerciseIndex) != -1);
     if (supersetOfExercise == props.supersetGrid.length - 1) {
+        if (props.workout.optionalExercises && props.workout.optionalExercises.length > 0) {
+            return (<vstack height="100%" width="100%" alignment="bottom end" padding="small">
+                        <button icon="add" onPress={props.addExercises} />
+                    </vstack>)
+        }
         return <vstack />
     }
     const nextExercises = props.supersetGrid[supersetOfExercise + 1]

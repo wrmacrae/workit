@@ -26,7 +26,7 @@ const row: ExerciseData = {
   sets: Array(5).fill(
     {
       target: 5,
-      weight: 45
+      weight: 65
     })
 };
 const overheadpress: ExerciseData = {
@@ -44,6 +44,74 @@ const deadlift: ExerciseData = {
   sets: Array(1).fill(
     {
       target: 5,
+      weight: 135
+    })
+}
+const pullup: ExerciseData = {
+  name: "Pullup",
+  image: "pullup.gif",
+  sets: Array(3).fill(
+    {
+      target: 8
+    })
+}
+const kneeraise: ExerciseData = {
+  name: "Knee Raise",
+  image: "kneeraise.gif",
+  sets: Array(3).fill(
+    {
+      target: 8
+    })
+}
+const skullcrusher: ExerciseData = {
+  name: "Skullcrusher",
+  image: "skullcrusher.gif",
+  sets: Array(3).fill(
+    {
+      target: 8,
+      weight: 45
+    })
+}
+const romaniandeadlift: ExerciseData = {
+  name: "Romanian Deadlift",
+  image: "romaniandeadlift.gif",
+  sets: Array(3).fill(
+    {
+      target: 8,
+      weight: 45
+    })
+}
+const barbellcurl = {
+  name: "Barbell Curl",
+  image: "barbellcurl.gif",
+  sets: Array(3).fill(
+    {
+      target: 8,
+      weight: 45
+    })
+}
+const dip = {
+  name: "Dip",
+  image: "dip.gif",
+  sets: Array(3).fill(
+    {
+      target: 8
+    })
+}
+const plank: ExerciseData = {
+  name: "Plank",
+  image: "plankcrunch.gif",
+  sets: Array(3).fill(
+    {
+      target: 8
+    })
+}
+const hipthrust: ExerciseData = {
+  name: "Hip Thrust",
+  image: "hipthrust.gif",
+  sets: Array(3).fill(
+    {
+      target: 8,
       weight: 45
     })
 }
@@ -53,6 +121,12 @@ export const strongLiftsA = {
     squat,
     bench,
     row,
+  ],
+  optionalExercises: [
+    pullup,
+    kneeraise,
+    skullcrusher,
+    romaniandeadlift
   ]
 };
 export const strongLiftsB = {
@@ -61,6 +135,12 @@ export const strongLiftsB = {
     squat,
     overheadpress,
     deadlift,
+  ],
+  optionalExercises: [
+    barbellcurl,
+    plank,
+    dip,
+    hipthrust
   ]
 };
 export const supersetsWorkout = {
@@ -120,25 +200,7 @@ export const supersetsWorkout = {
           target: 15,
         })
     },
-    {
-      name: "Hip Thrust",
-      image: "hipthrust.gif",
-      superset: true,
-      sets: [
-        {
-          target: 15,
-          weight: 45
-        },
-        {
-          target: 12,
-          weight: 45
-        },
-        {
-          target: 10,
-          weight: 45
-        },
-      ],
-    },
+    {...JSON.parse(JSON.stringify(hipthrust)), superset: true},
     {
       name: "Jackknife Crunch",
       image: "jackknifecrunch.gif",
@@ -173,7 +235,8 @@ export const supersetsWorkout = {
           target: 15,
         })
     },
-  ]
+  ],
+  optionalExercises: []
 };
 
 Devvit.addMenuItem({

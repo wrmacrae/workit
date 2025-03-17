@@ -15,6 +15,7 @@ export type WorkoutData = {
   complete?: number;
   author?: string;
   exercises: ExerciseData[];
+  optionalExercises?: ExerciseData[];
 };
 export const loadingWorkout: WorkoutData = {
   exercises: []

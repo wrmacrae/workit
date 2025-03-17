@@ -3,6 +3,7 @@ import { ExerciseData, SetData, WorkoutData } from "../types.js"
 
 interface TimerProps {
     workout: WorkoutData
+    exerciseIndex: number
 }
 
 function workoutDuration(times: number[]) {
@@ -47,16 +48,17 @@ export const Timer = (props: TimerProps): JSX.Element => {
         </vstack>)
     }
     const interval = useInterval(() => {}, 1000).start();
+    const showRest = !props.workout.exercises[props.exerciseIndex].sets.every((set) => !set.reps) && !props.workout.exercises[props.exerciseIndex].sets.every((set) => set.reps)
     var restColor = "neutral-content"
     const rest = restDuration(times)
-    if (rest >= 120000) {
+    if (rest >= 300000) {
         restColor = "danger-plain"
-    } else if (rest >= 60000) {
+    } else if (rest >= 120000) {
         restColor = "caution-plain"
     }
     return (<vstack height="100%" width="100%" alignment="top end" padding="small">
             {monospaceString(millisToString(workoutDuration(times)), "neutral-content")}
-            {monospaceString(millisToString(restDuration(times)), restColor)}
+            {showRest ? monospaceString(millisToString(restDuration(times)), restColor) : <vstack/>}
     </vstack>)
 }
 

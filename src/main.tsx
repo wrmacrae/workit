@@ -474,7 +474,7 @@ Devvit.addCustomPostType({
     }
     return (
       <zstack height="100%" width="100%" alignment="start top">
-        <Timer workout={workout} />
+        <Timer workout={workout} exerciseIndex={exerciseIndex} />
         <Next workout={workout} supersetGrid={supersetGrid} exerciseIndex={exerciseIndex} />
         <hstack height="100%" width="100%" alignment="center middle">
           <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>

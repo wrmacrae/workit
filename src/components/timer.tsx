@@ -28,7 +28,7 @@ export function millisToString(time: number) {
     if (parts[0] == 0) {
         parts.splice(0, 1)
     }
-    return parts.map(s => String(s).padStart(2,'0')).join(':');
+    return parts.map((s,i) => i > 0 ? String(s).padStart(2,'0'): s).join(':');
 }
 
 function monospaceString(s: string, color: string) {
@@ -48,7 +48,7 @@ export const Timer = (props: TimerProps): JSX.Element => {
         </vstack>)
     }
     const interval = useInterval(() => {}, 1000).start();
-    const showRest = !props.workout.exercises[props.exerciseIndex].sets.every((set) => !set.reps) && !props.workout.exercises[props.exerciseIndex].sets.every((set) => set.reps)
+    const showRest = !props.workout.exercises[props.exerciseIndex].sets.every((set) => !set.reps && !set.time) && !props.workout.exercises[props.exerciseIndex].sets.every((set) => set.reps || set.time)
     var restColor = "neutral-content"
     const rest = restDuration(times)
     if (rest >= 300000) {

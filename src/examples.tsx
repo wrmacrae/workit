@@ -100,10 +100,10 @@ const dip = {
 }
 const plank: ExerciseData = {
   name: "Plank",
-  image: "plankcrunch.gif",
+  image: "plank.gif",
   sets: Array(3).fill(
     {
-      target: 8
+      targetTime: 30000
     })
 }
 const hipthrust: ExerciseData = {

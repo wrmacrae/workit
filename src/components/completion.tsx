@@ -50,7 +50,7 @@ const STATS = [
 ]
 
 function totalWeight(props: CompletionProps) {
-    const total = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => set.reps! * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)
+    const total = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => (set.reps ?? 0) * set.weight!).filter((totalWeight) => totalWeight).reduce((acc, val) => acc + val, 0)
     if (!total) {return}
     return `Total Weight Lifted: ${total}`;
 }
@@ -69,7 +69,7 @@ function activeTime(props: CompletionProps) {
 }
 
 function targetRepsReached(props: CompletionProps) {
-    const sets = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).filter((set: SetData) => set.reps && set.reps >= set.target!).length
+    const sets = props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).filter((set: SetData) => (set.reps && set.reps >= set.target!) || (set.time && set.time >= set.targetTime!)).length
     if (!sets) {return}
     const percent = Math.round(sets / props.workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets).length * 100)
     return `Target reps reached on ${sets} sets (${percent}%).`

@@ -1,7 +1,9 @@
 export type SetData = {
   target?: number;
+  targetTime?: number;
   weight?: number;
   reps?: number;
+  time?: number
   repsEnteredTime?: number;
 };
 export type ExerciseData = {

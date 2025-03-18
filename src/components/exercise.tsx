@@ -35,7 +35,7 @@ const increaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () =>
     const newWeight = Number(props.workout.exercises[props.exerciseIndex].sets[setIndex].weight) + props.increment
     props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
     for (var set = setIndex + 1; set < props.workout.exercises[props.exerciseIndex].sets.length; set++) {
-      if (!props.workout.exercises[props.exerciseIndex].sets[set].reps) {
+      if (!props.workout.exercises[props.exerciseIndex].sets[set].reps && !props.workout.exercises[props.exerciseIndex].sets[set].time) {
         props.workout.exercises[props.exerciseIndex].sets[set].weight = newWeight
       }
     }
@@ -46,7 +46,7 @@ const decreaseWeightForIndex = (props: ExerciseProps, setIndex: number) => () =>
     props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
     setIndex++
     while (setIndex < props.workout.exercises[props.exerciseIndex].sets.length) {
-      if (!props.workout.exercises[props.exerciseIndex].sets[setIndex].reps) {
+      if (!props.workout.exercises[props.exerciseIndex].sets[setIndex].reps && !props.workout.exercises[props.exerciseIndex].sets[setIndex].time) {
         props.workout.exercises[props.exerciseIndex].sets[setIndex].weight = newWeight
       }
       setIndex++
@@ -103,9 +103,11 @@ function getWeightsAsString(workout: WorkoutData, exerciseIndex: number): string
       set.target?.toString()).join(", ");
 }
 
-function withoutReps(exercise: ExerciseData) {
+function withoutRepsOrTime(exercise: ExerciseData) {
 for (var set of exercise.sets) {
     delete set.reps
+    delete set.time
+    delete set.repsEnteredTime
 }
 return exercise
 }
@@ -113,7 +115,7 @@ return exercise
 function setNumbers(sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var setNumbers = []
     for (let i = 0; i < sets.length; i++)  {
-        setNumbers.push(<SetNumber setNumber={i+1} done={sets[i].reps != undefined && sets[i].reps != 0} onPress={() => onRepsClick(i)} />)    
+        setNumbers.push(<SetNumber setNumber={i+1} done={Boolean(sets[i].reps || sets[i].time)} onPress={() => onRepsClick(i)} />)    
     }
     return (
         <vstack alignment="center top" gap="small">
@@ -125,13 +127,13 @@ function setNumbers(sets: SetData[], onRepsClick: (setIndex: number) => void) {
 
 function reps(props: ExerciseProps, sets: SetData[], onRepsClick: (setIndex: number) => void) {
     var reps = []
-    const nextIndex = sets.findIndex((set: SetData) => set.reps == undefined || set.reps == 0)
+    const nextIndex = sets.findIndex((set: SetData) => !set.reps && !set.time)
     for (let i = 0; i < sets.length; i++)  {
-        reps.push(<Reps reps={sets[i].reps} target={String(sets[i].target)} primary={i==nextIndex} onPress={() => onRepsClick(i)} increaseReps={increaseRepsForIndex(props, i)} decreaseReps={decreaseRepsForIndex(props, i)}/>)
+        reps.push(<Reps workout={props.workout} set={sets[i]} primary={i==nextIndex} onPress={() => onRepsClick(i)} increaseReps={increaseRepsForIndex(props, i)} decreaseReps={decreaseRepsForIndex(props, i)} setWorkout={props.setWorkout} setPendingUpdates={props.setPendingUpdates}/>)
     }
     return (
         <vstack alignment="center top" gap="small">
-            <text size="small" alignment='center middle'>Reps</text>
+            <text size="small" alignment='center middle'>{sets[0].target ? "Reps" : "Time"}</text>
             {reps}
         </vstack>
     )
@@ -228,7 +230,7 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
           props.workout.exercises[props.exerciseIndex] = newExercise
           props.setWorkout(props.workout)
           props.setPendingUpdates(prev => [...prev, props.workout]);
-          props.template.exercises[exerciseIndex] = withoutReps(newExercise)
+          props.template.exercises[exerciseIndex] = withoutRepsOrTime(newExercise)
           props.setTemplate(props.template)
           props.setPendingTemplateUpdates(prev => [...prev, props.template])
     }));

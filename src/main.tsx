@@ -8,7 +8,7 @@ import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
-import { Timer } from './components/timer.js';
+import { millisToString, Timer } from './components/timer.js';
 import { EmptyError } from './components/emptyerror.js';
 import { IncompleteWarning } from './components/incompletewarning.js';
 import { Completion } from './components/completion.js';
@@ -71,7 +71,7 @@ function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: {
   for (var exercise of templateWorkout.exercises) {
     if (lastCompletion.hasOwnProperty(exercise.name) && lastCompletion[exercise.name].length > 0 && lastCompletion[exercise.name][0].weight) {
       const previousSets : SetData[] = lastCompletion[exercise.name]
-      if (previousSets.every((set: SetData) => set.reps && set.target && set.reps >= set.target)) {
+      if (previousSets.every((set: SetData) => (set.reps && set.target && set.reps >= set.target) || (set.time && set.targetTime && set.time >= set.targetTime))) {
         exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight! + settings.increment)
       }
     }
@@ -79,7 +79,7 @@ function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: {
   for (var exercise of templateWorkout.optionalExercises ?? []) {
     if (lastCompletion.hasOwnProperty(exercise.name) && lastCompletion[exercise.name].length > 0 && lastCompletion[exercise.name][0].weight) {
       const previousSets : SetData[] = lastCompletion[exercise.name]
-      if (previousSets.every((set: SetData) => set.reps && set.target && set.reps >= set.target)) {
+      if (previousSets.every((set: SetData) => (set.reps && set.target && set.reps >= set.target) || (set.time && set.targetTime && set.time >= set.targetTime))) {
         exercise.sets.map((set: SetData) => set.weight = lastCompletion[exercise.name][0].weight! + settings.increment)
       }
     }
@@ -89,7 +89,7 @@ function makeWorkoutFromTemplate(templateWorkout: WorkoutData, lastCompletion: {
 
 function allSetsDone(data: WorkoutData) {
   for (const exercise of data.exercises) {
-    if (!exercise.sets.every((set: SetData) => set.reps ?? 0 > 0)) {
+    if (!exercise.sets.every((set: SetData) => (set.reps ?? 0 > 0) || (set.time ?? 0 > 0))) {
       return false
     }
   }
@@ -97,16 +97,16 @@ function allSetsDone(data: WorkoutData) {
 }
 
 function workoutIsEmpty(workout: WorkoutData) {
-  return workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps ?? 0)).every((value: number) => value == 0);
+  return workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => (set.reps || set.time) ?? 0)).every((value: number) => value == 0);
 }
 
 function formatExerciseAsComment(exercise: ExerciseData) {
   var comment = `${exercise.name}: `
-  const sets: SetData[] = exercise.sets.filter((set: SetData) => set.reps)
-  const setsAsStrings = sets.map((set: SetData) => `${set.reps}` + (set.weight ? ` at ${set.weight}` : ``))
+  const sets: SetData[] = exercise.sets.filter((set: SetData) => set.reps || set.time)
+  const setsAsStrings = sets.map((set: SetData) => `${set.reps || millisToString(set.time!)}` + (set.weight ? ` at ${set.weight}` : ``))
   if (new Set(setsAsStrings).size == 1 && sets.length > 1)
   {
-    comment += `${sets[0].reps}x${setsAsStrings.length}` + (sets[0].weight ? ` at ${sets[0].weight}` : ``)
+    comment += `${setsAsStrings.length}x${sets[0].reps || millisToString(sets[0].time!)}` + (sets[0].weight ? ` at ${sets[0].weight}` : ``)
   } else {
     comment += setsAsStrings.join(", ")
   }
@@ -114,7 +114,7 @@ function formatExerciseAsComment(exercise: ExerciseData) {
 }
 
 function formatWorkoutAsComment(workout: WorkoutData) {
-  return "I did this workout!\n\n" + workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps)).map(formatExerciseAsComment).join("\n\n")
+  return "I did this workout!\n\n" + workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps && !set.time)).map(formatExerciseAsComment).join("\n\n")
 }
 
 async function addExerciseForUser(context: JobContext, exercise: ExerciseData) {
@@ -499,7 +499,7 @@ Devvit.addCustomPostType({
       setShowMenu(false)
     }
     var supersetGrid: ExerciseData[][] = makeSupersetGrid(workout, context)
-    const supersetDoneness: boolean[][][] = supersetGrid.map((superset: ExerciseData[]) => superset.map((exercise: ExerciseData) => exercise.sets.map((set: SetData) => set.reps != undefined && set.reps > 0)))
+    const supersetDoneness: boolean[][][] = supersetGrid.map((superset: ExerciseData[]) => superset.map((exercise: ExerciseData) => exercise.sets.map((set: SetData) => Boolean(set.reps || set.time))))
     const advanceExercise = () => {
       setExerciseIndex(exerciseIndex + (supersetWithNext(context, workout, exerciseIndex) ? 2 : 1))
     }
@@ -547,7 +547,7 @@ Devvit.addCustomPostType({
               : <hstack/>}
             </hstack>
             {exerciseIndex + ((supersetWithNext(context, workout, exerciseIndex) ? 2 : 1)) < workout.exercises.length ?
-              (workout.exercises[exerciseIndex].sets.every((set: SetData) => set.reps ?? 0 > 0) ?
+              (workout.exercises[exerciseIndex].sets.every((set: SetData) => (set.reps ?? 0 > 0) || (set.time ?? 0 > 0)) ?
                 <button icon="caret-down" appearance="primary" onPress={advanceExercise}/> :
                 <button icon="caret-down" onPress={advanceExercise}/>
               ) :

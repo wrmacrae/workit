@@ -166,10 +166,10 @@ function weights(props: ExerciseProps, sets: SetData[]) {
 
 function summarizeExerciseTemplate(exercise: ExerciseData) {
   var comment = `${exercise.name} (`
-  const setsAsStrings = exercise.sets.map((set) => `${set.target}`)
+  const setsAsStrings = exercise.sets.map((set) => `${set.target || `${set.targetTime!/1000}sec`}`)
   if (new Set(setsAsStrings).size == 1)
   {
-    comment += `${setsAsStrings[0]}x${exercise.sets.length}`
+    comment += `${exercise.sets.length}x${setsAsStrings[0]}`
   } else {
     comment += setsAsStrings.join(", ")
   }
@@ -182,15 +182,14 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
       setRepsToTarget(props, setIndex)
     }
 
-    const editForms = [...Array(props.workout.exercises.length).keys()].map((exerciseIndex) => useForm(
-        (data) => ({
+    const editForm = useForm({
           fields: [
             {
               type: 'string',
               name: 'exerciseName',
               label: 'Exercise Name',
               required: true,
-              defaultValue: data.workout.exercises[exerciseIndex].name
+              defaultValue: props.workout.exercises[props.exerciseIndex].name
             },
             {
               type: 'image',
@@ -203,39 +202,39 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
               name: 'sets',
               label: 'Number of Sets',
               required: true,
-              defaultValue: data.workout.exercises[exerciseIndex].sets.length
+              defaultValue: props.workout.exercises[props.exerciseIndex].sets.length
             },
             {
               type: 'string',
               name: 'targets',
               label: 'Target reps per set (or comma-separated list of reps)',
               required: true,
-              defaultValue: getTargetsAsString(data.workout[exerciseIndex])
+              defaultValue: getTargetsAsString(props.workout.exercises[props.exerciseIndex])
             },
             {
               type: 'string',
               name: 'weights',
               label: 'Weight (or comma-separated list of weights)',
               required: false,
-              defaultValue: getWeightsAsString(data.workout, exerciseIndex)
+              defaultValue: getWeightsAsString(props.workout, props.exerciseIndex)
             },
            ],
            title: 'Edit this Exercise',
            acceptLabel: 'Edit',
-        }), async (values) => {
+        }, async (values) => {
           if (values.image == undefined) {
-            values.image = props.workout.exercises[exerciseIndex].image
+            values.image = props.workout.exercises[props.exerciseIndex].image
           }
           const newExercise = await createExerciseFromForm(values, props.context);
           props.workout.exercises[props.exerciseIndex] = newExercise
           props.setWorkout(props.workout)
           props.setPendingUpdates(prev => [...prev, props.workout]);
-          props.template.exercises[exerciseIndex] = withoutRepsOrTime(newExercise)
+          props.template.exercises[props.exerciseIndex] = withoutRepsOrTime(newExercise)
           props.setTemplate(props.template)
           props.setPendingTemplateUpdates(prev => [...prev, props.template])
-    }));
+    });
     const editExercise = (props: ExerciseProps) => {
-        props.context.ui.showForm(editForms[props.exerciseIndex], {workout: props.workout})
+        props.context.ui.showForm(editForm)
     }
     const exercise = props.workout.exercises[props.exerciseIndex]
     return (

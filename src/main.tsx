@@ -398,7 +398,7 @@ Devvit.addCustomPostType({
             name: 'exerciseName',
             label: 'Optional Exercise',
             required: true,
-            options: workout.optionalExercises.map(exercise => ({ label: exercise.name, value: exercise.name }))
+            options: (workout.optionalExercises ?? []).map(exercise => ({ label: exercise.name, value: exercise.name }))
           }
         ],
         title: 'Add an Optional Exercise',

@@ -290,7 +290,6 @@ Devvit.addCustomPostType({
     const asyncDataResult = useAsync(async () => {
       const startedWorkout = await context.redis.get(keyForWorkout(context.postId!, context.userId!)) // User started a workout already
       const templateWorkout = await context.redis.get(keyForTemplate(context.postId!))
-      console.log(templateWorkout)
       // TODO Don't load completion data for a started workout
       const rawCompletionData: Record<string, string> = await context.redis.hGetAll(keyForExerciseToLastCompletion(context.userId!) ?? {})
       const lastCompletionData = Object.fromEntries(

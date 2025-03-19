@@ -3,6 +3,7 @@ import { SetData, WorkoutData } from '../types.js';
 import { millisToString } from './timer.js';
 
 interface RepsProps {
+    exerciseIndex: number
     workout: WorkoutData
     set: SetData
     primary: boolean
@@ -14,32 +15,31 @@ interface RepsProps {
 }
 
 export const Reps = (props: RepsProps): JSX.Element => {
-    const [time, setTime] = useState(0)
-    const [running, setRunning] = useState(false)
-    const interval = useInterval(() => {running ? setTime(time + 1000) : 0}, 1000);
+    const [running, setRunning] = useState<number>(0)
+    const interval = useInterval(() => {}, 1000).start();
 
     function saveWorkout() {
         props.setWorkout(props.workout);
         props.setPendingUpdates(prev => [...prev, props.workout]);
     }
 
+    function totalTime() {
+        return (running ? Date.now() - running : 0) + (props.set.time ?? 0);
+    }
+    
     function toggleTimer() {
         if (running) {
-            interval.stop()
-            props.set.time = time
+            props.set.time = totalTime()
             saveWorkout()
+            setRunning(0)
         } else {
-            interval.start()
-            setTime(time + 1)
+            setRunning(Date.now())
         }
-        setRunning(!running)
     }
 
     function reset() {
-        interval.stop()
-        setRunning(false)
+        setRunning(0)
         delete props.set.time
-        setTime(0)
         saveWorkout()
     }
 
@@ -54,12 +54,12 @@ export const Reps = (props: RepsProps): JSX.Element => {
             </hstack>
         )
     }
-    if (props.set.time || time) {
+    if (props.set.time || running) {
         return (
             <hstack backgroundColor='lightgray' cornerRadius="small" padding="small" width="100px" height="40px">
                 <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={toggleTimer}><icon name={running ? "pause" : "play"} size="xsmall" color="black"/></vstack>
                 <spacer grow />
-                <vstack onPress={toggleTimer}><text size="large" alignment='center middle' color="black">{running ? millisToString(time) : millisToString(props.set.time)}</text></vstack>
+                <vstack onPress={toggleTimer}><text size="large" alignment='center middle' color="black">{millisToString(totalTime())}</text></vstack>
                 <spacer grow />
                 <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={reset}><icon name="delete" size="xsmall" color="black"/></vstack>
             </hstack>

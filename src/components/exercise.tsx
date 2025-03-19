@@ -129,7 +129,7 @@ function reps(props: ExerciseProps, sets: SetData[], onRepsClick: (setIndex: num
     var reps = []
     const nextIndex = sets.findIndex((set: SetData) => !set.reps && !set.time)
     for (let i = 0; i < sets.length; i++)  {
-        reps.push(<Reps workout={props.workout} set={sets[i]} primary={i==nextIndex} onPress={() => onRepsClick(i)} increaseReps={increaseRepsForIndex(props, i)} decreaseReps={decreaseRepsForIndex(props, i)} setWorkout={props.setWorkout} setPendingUpdates={props.setPendingUpdates}/>)
+        reps.push(<Reps exerciseIndex={props.exerciseIndex} workout={props.workout} set={sets[i]} primary={i==nextIndex} onPress={() => onRepsClick(i)} increaseReps={increaseRepsForIndex(props, i)} decreaseReps={decreaseRepsForIndex(props, i)} setWorkout={props.setWorkout} setPendingUpdates={props.setPendingUpdates}/>)
     }
     return (
         <vstack alignment="center top" gap="small">

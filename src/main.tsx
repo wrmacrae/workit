@@ -264,10 +264,10 @@ Devvit.addCustomPostType({
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
     const [workouts, setWorkouts] = useState<{member: string; score: number;}[]>([])
     var { error } = useAsync(async () => {
-      while (pendingUpdates.length > 0) {
-        const nextUpdate = pendingUpdates.shift()
-        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(nextUpdate));
-        setPendingUpdates(pendingUpdates);
+      if (pendingUpdates.length > 0) {
+        const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
+        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+        setPendingUpdates([]);
       }
     }, {
       depends: [pendingUpdates],

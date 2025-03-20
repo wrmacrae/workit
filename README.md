@@ -3,7 +3,7 @@
 Workit lets you write, share, and track workouts in Reddit. Posts allow each user to enter their own reps and weights, and then share their results in a comment when they finish. A variety of tools allow authoring and editting of workouts manually or automatically (on a daily basis). A Workit workout is a collection of exercises intended to be done together within on session, and those exercises are composed of sets, where each set involves reps (repetitions) of the same movement at a certain weight.
 
 #### To Do a Workout
-- Find an existing Workit post (such as https://www.reddit.com/r/workit5x5/comments/1j5lvh3/strong_lifts_a/)
+- Find an existing Workit post (such as [https://www.reddit.com/r/workit5x5/comments/1j5lvh3/strong_lifts_a/](https://www.reddit.com/r/workit5x5/comments/1j5lvh3/strong_lifts_a/))
 - Click the blue buttons to progress through the exercises, until you have clicked Complete
 - You can jump around and enter or change reps and weights of any set at any time.
 - If you change weights of a set, all of the following incomplete sets of that exercise automatically take on the new weight.

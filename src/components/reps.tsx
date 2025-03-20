@@ -3,8 +3,9 @@ import { SetData, WorkoutData } from '../types.js';
 import { millisToString } from './timer.js';
 
 interface RepsProps {
-    exerciseIndex: number
     workout: WorkoutData
+    exerciseIndex: number
+    setIndex: number
     set: SetData
     primary: boolean
     increaseReps: () => void
@@ -14,8 +15,9 @@ interface RepsProps {
     setPendingUpdates: StateSetter<never[]>
 }
 
+//TODO Why do I need 2d arrays for time and running? Something was weird with useInterval while running a time and paging around...
 export const Reps = (props: RepsProps): JSX.Element => {
-    const [running, setRunning] = useState<number>(0)
+    const [running, setRunning] = useState([...Array(12)].map(e => Array(6).fill(0)))
     const interval = useInterval(() => {}, 1000).start();
 
     function saveWorkout() {
@@ -24,22 +26,26 @@ export const Reps = (props: RepsProps): JSX.Element => {
     }
 
     function totalTime() {
-        return (running ? Date.now() - running : 0) + (props.set.time ?? 0);
+        const r = running[props.exerciseIndex][props.setIndex]
+        return (r ? Date.now() - r : 0) + (props.set.time ?? 0);
     }
     
     function toggleTimer() {
-        if (running) {
+        if (running[props.exerciseIndex][props.setIndex]) {
             props.set.time = totalTime()
+            props.set.repsEnteredTime = Date.now()
             saveWorkout()
-            setRunning(0)
+            running[props.exerciseIndex][props.setIndex] = 0
         } else {
-            setRunning(Date.now())
+            running[props.exerciseIndex][props.setIndex] = Date.now()
         }
+        setRunning(running)
     }
-
     function reset() {
-        setRunning(0)
+        running[props.exerciseIndex][props.setIndex] = 0
+        setRunning(running)
         delete props.set.time
+        delete props.set.repsEnteredTime
         saveWorkout()
     }
 
@@ -54,10 +60,10 @@ export const Reps = (props: RepsProps): JSX.Element => {
             </hstack>
         )
     }
-    if (props.set.time || running) {
+    if (props.set.time || running[props.exerciseIndex][props.setIndex]) {
         return (
             <hstack backgroundColor='lightgray' cornerRadius="small" padding="small" width="100px" height="40px">
-                <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={toggleTimer}><icon name={running ? "pause" : "play"} size="xsmall" color="black"/></vstack>
+                <vstack cornerRadius="small" borderColor='gray' alignment='center middle' padding="xsmall" onPress={toggleTimer}><icon name={running[props.exerciseIndex][props.setIndex] ? "pause" : "play"} size="xsmall" color="black"/></vstack>
                 <spacer grow />
                 <vstack onPress={toggleTimer}><text size="large" alignment='center middle' color="black">{millisToString(totalTime())}</text></vstack>
                 <spacer grow />

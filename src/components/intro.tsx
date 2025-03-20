@@ -19,8 +19,7 @@ export const Intro = (props: IntroProps): JSX.Element => {
                 <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium">
                     <text>Here is your private copy of the workout.</text>
                     <spacer/>
-                    <text>When you complete it, Workit share a summary</text>
-                    <text>as a comment.</text>
+                    <text>When complete, Workit shares a comment.</text>
                     <spacer/>
                     <hstack alignment="center middle" width="100%">
                         <button icon="play" appearance="primary" onPress={close}>Continue</button>

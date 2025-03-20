@@ -102,6 +102,7 @@ export const Menu = (props: MenuProps): JSX.Element => {
         {props.isAuthor ?
         <hstack padding="small" onPress={props.toggleEditMode}><spacer/><icon lightColor='black' darkColor='white' name={props.editMode ? "edit-fill": "edit"} /><spacer/><text lightColor='black' darkColor='white' weight="bold">{props.editMode ? "Dis" : "En"}able Edit Mode</text><spacer/></hstack>
         :<vstack/>}
+        <hstack padding="small" onPress={() => props.context.ui.navigateTo("https://developers.reddit.com/apps/workit-app")}><spacer/><icon lightColor='black' darkColor='white' name='help' /><spacer/><text lightColor='black' darkColor='white' weight="bold">Go To README</text><spacer/></hstack>
       </vstack>
      : <vstack/> }
   </vstack>)

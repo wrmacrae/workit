@@ -10,7 +10,7 @@ interface PlateCalculatorProps {
     barbellWeight: number
 }
 
-const AVAILABLE_PLATES = [45, 35, 25, 10, 5]
+const AVAILABLE_PLATES = [45, 35, 25, 10, 5, 2.5]
 
 function getTotalWeight(props: PlateCalculatorProps): number {
     return props.workout.exercises[props.plateCalculatorIndices[0]].sets[props.plateCalculatorIndices[1]].weight ?? 45

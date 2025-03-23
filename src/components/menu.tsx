@@ -13,6 +13,8 @@ interface MenuProps {
     editMode: boolean
     context: Devvit.Context
     exerciseCollection: { [k: string]: ExerciseData }
+    stats: () => void
+    achievements: () => void
 }
 
 export const Menu = (props: MenuProps): JSX.Element => {
@@ -98,10 +100,11 @@ export const Menu = (props: MenuProps): JSX.Element => {
         <hstack padding="small" onPress={props.settings}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(exerciseForm)}><spacer/><icon lightColor='black' darkColor='white' name="add" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Exercise</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.showForm(workoutForm)}><spacer/><icon lightColor='black' darkColor='white' name="text-post" /><spacer/><text lightColor='black' darkColor='white' weight="bold">New Workout</text><spacer/></hstack>
-        {/* <hstack padding="small" onPress={() => console.log("not yet implemented")}><spacer/><icon lightColor='black' darkColor='white' name="settings" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Settings</text><spacer/></hstack> */}
         {props.isAuthor ?
         <hstack padding="small" onPress={props.toggleEditMode}><spacer/><icon lightColor='black' darkColor='white' name={props.editMode ? "edit-fill": "edit"} /><spacer/><text lightColor='black' darkColor='white' weight="bold">{props.editMode ? "Dis" : "En"}able Edit Mode</text><spacer/></hstack>
         :<vstack/>}
+        <hstack padding="small" onPress={props.stats}><spacer/><icon lightColor='black' darkColor='white' name="topic-business" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Stats</text><spacer/></hstack>
+        <hstack padding="small" onPress={props.achievements}><spacer/><icon lightColor='black' darkColor='white' name="contest" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Achievements</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.navigateTo("https://developers.reddit.com/apps/workit-app")}><spacer/><icon lightColor='black' darkColor='white' name='help' /><spacer/><text lightColor='black' darkColor='white' weight="bold">Go To README</text><spacer/></hstack>
       </vstack>
      : <vstack/> }

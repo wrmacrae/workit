@@ -14,6 +14,8 @@ import { IncompleteWarning } from './components/incompletewarning.js';
 import { Completion } from './components/completion.js';
 import { Next } from './components/next.js';
 import { Summary } from './components/summary.js';
+import { Stats } from './components/stats.js';
+import { Achievements } from './components/achievements.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -251,6 +253,8 @@ Devvit.addCustomPostType({
     const [summaryMode, setSummaryMode] = useState(true)
     const [exerciseIndex, setExerciseIndex] = useState(0)
     const [showCompletion, setShowCompletion] = useState(false)
+    const [showStats, setShowStats] = useState(false)
+    const [showAchievements, setShowAchievements] = useState(false)
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [showEmptyError, setShowEmptyError] = useState(false)
@@ -566,6 +570,8 @@ Devvit.addCustomPostType({
           resetWorkout={resetWorkout(lastCompletion)} toggleEditMode={toggleEditMode} editMode={editMode}
           isAuthor={workout.author == context.userId}
           exerciseCollection={exerciseCollection}
+          stats={() => {setShowStats(true); setShowMenu(false)}}
+          achievements={() => {setShowAchievements(true); setShowMenu(false)}}
         />
         {showEmptyError ? <EmptyError setExerciseIndex={setExerciseIndex} setShowEmptyError={setShowEmptyError} /> : <vstack/>}
         {showIncompleteWarning ? <IncompleteWarning setExerciseIndex={setExerciseIndex} setShowIncompleteWarning={setShowIncompleteWarning} completeWorkout={forceCompleteWorkout} /> : <vstack/>}
@@ -579,6 +585,8 @@ Devvit.addCustomPostType({
           barbellWeight={settings.barbellWeight}
           />
         <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
+        <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} />
+        <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} />
       </zstack>
     );
   },

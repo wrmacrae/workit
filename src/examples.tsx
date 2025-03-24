@@ -9,7 +9,11 @@ export const squat: ExerciseData = {
     {
       target: 5,
       weight: 45
-    })
+    }),
+  info: `1. Stand with your heels at shoulder width, and the bar on your back.
+2. Inhale and brace your core.
+3. Bend your legs until hips are below the tops of your knees.
+4. Straighten legs.`
 };
 const bench: ExerciseData = {
   name: "Bench Press",
@@ -18,7 +22,11 @@ const bench: ExerciseData = {
     {
       target: 5,
       weight: 45
-    })
+    }),
+  info: `1. Lay on a bench with your face beneath the bar.
+2. Push bar off of rack and straighten arms.
+3. Lower bar until it touches your chest.
+4. Straighten arms again.`
 };
 const row: ExerciseData = {
   name: "Barbell Row",
@@ -27,8 +35,13 @@ const row: ExerciseData = {
     {
       target: 5,
       weight: 65
-    })
-};
+    }),
+    info: `1. With feet beneath the bar, bend over and hold the bar.
+2. Bend your knees slightly so that your back is parallel to the floor.
+3. Keep your back straight and lift your chest. 
+4. Pull the bar up to your sternum.
+5. Lower the bar to the floor.`
+  };
 const overheadpress: ExerciseData = {
   name: "Overhead Press",
   image: "overheadpress.gif",
@@ -36,8 +49,11 @@ const overheadpress: ExerciseData = {
     {
       target: 5,
       weight: 45
-    })
-}
+    }),
+    info: `1. Hold the bar on the front of your shoulders, forearms vertical.
+2. Push bar up until your elbows lock and shoulders shrug upward.
+3. Lower bar back to shoulders.`
+  };
 const deadlift: ExerciseData = {
   name: "Deadlift",
   image: "deadlift.gif",
@@ -45,8 +61,13 @@ const deadlift: ExerciseData = {
     {
       target: 5,
       weight: 135
-    })
-}
+    }),
+    info: `1. Stand with your feed under the bar.
+2. Bend over and grab the bar with a shoulder-width grip.
+3. Bend your knees until your shins touch the bar.
+4. Lift your chest up and straighten your lower back.
+5. Take a breath, hold it, and stand up.`
+  };
 const pullup: ExerciseData = {
   name: "Pullup",
   image: "pullup.gif",

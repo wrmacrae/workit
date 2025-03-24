@@ -16,6 +16,7 @@ import { Next } from './components/next.js';
 import { Summary } from './components/summary.js';
 import { Stats } from './components/stats.js';
 import { Achievements } from './components/achievements.js';
+import { ExerciseInfo } from './components/exerciseinfo.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -255,6 +256,7 @@ Devvit.addCustomPostType({
     const [showCompletion, setShowCompletion] = useState(false)
     const [showStats, setShowStats] = useState(false)
     const [showAchievements, setShowAchievements] = useState(false)
+    const [showExerciseInfo, setShowExerciseInfo] = useState<ExerciseData[]>([])
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
     const [showEmptyError, setShowEmptyError] = useState(false)
@@ -532,6 +534,7 @@ Devvit.addCustomPostType({
                 setPendingUpdates={setPendingUpdates}
                 setPendingTemplateUpdates={setPendingTemplateUpdates}
                 plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
+                setShowExerciseInfo={setShowExerciseInfo}
                 /> 
               {supersetWithNext(context, workout, exerciseIndex) ?
               <hstack alignment="center middle">
@@ -546,6 +549,7 @@ Devvit.addCustomPostType({
                   setPendingUpdates={setPendingUpdates}
                   setPendingTemplateUpdates={setPendingTemplateUpdates}
                   plateCalculatorIndices={plateCalculatorIndices} setPlateCalculatorIndices={setPlateCalculatorIndices}
+                  setShowExerciseInfo={setShowExerciseInfo}
                   /> 
               </hstack>
               : <hstack/>}
@@ -584,8 +588,9 @@ Devvit.addCustomPostType({
           setPendingUpdates={setPendingUpdates}
           barbellWeight={settings.barbellWeight}
           />
+        <ExerciseInfo showExerciseInfo={showExerciseInfo} setShowExerciseInfo={setShowExerciseInfo}/>
         <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
-        <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} />
+        <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
         <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} />
       </zstack>
     );

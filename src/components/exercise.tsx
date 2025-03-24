@@ -24,6 +24,7 @@ interface ExerciseProps {
     setExerciseIndex: StateSetter<number>
     plateCalculatorIndices: number[]
     setPlateCalculatorIndices: StateSetter<number[]>
+    setShowExerciseInfo: StateSetter<ExerciseData[]>
 }
 
 function saveWorkout(props: ExerciseProps) {
@@ -240,10 +241,18 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
     return (
         <vstack gap="small">
             <vstack cornerRadius='large' height='100%' alignment='middle' onPress={props.editMode ? () => editExercise(props) : undefined} grow><image url={exercise.image} imageWidth={960} imageHeight={540} width="280px" height={String(350 - exercise.sets.length * 50) + "px"} resizeMode='cover'></image></vstack>
-            <hstack alignment="center top">
-                <text size="large" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
-                {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
-            </hstack>
+            <zstack width="100%">
+              <hstack width="100%" alignment="center top">
+                  <text size="large" alignment="center top" onPress={props.editMode ? () => editExercise(props) : undefined}>{exercise.name}</text>
+                  {props.editMode ? <icon name="delete" onPress={() => deleteExercise(props)}/> : <hstack />}
+              </hstack>
+              <hstack width="100%" alignment="end top">
+                {props.workout.exercises[props.exerciseIndex].info ? 
+                  <icon name="info" onPress={() => props.setShowExerciseInfo([props.workout.exercises[props.exerciseIndex]])} /> :
+                  <vstack />
+                }
+              </hstack>
+            </zstack>
             <hstack alignment="center middle" gap="small">
               {setNumbers(exercise.sets, onRepsClick)}
               {reps(props, exercise.sets, onRepsClick)}

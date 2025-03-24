@@ -10,6 +10,7 @@ export type ExerciseData = {
   name: string;
   image: string;
   superset?: boolean;
+  info?: string;
   sets: SetData[];
 };
 export type WorkoutData = {

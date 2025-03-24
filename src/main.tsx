@@ -591,7 +591,7 @@ Devvit.addCustomPostType({
         <ExerciseInfo showExerciseInfo={showExerciseInfo} setShowExerciseInfo={setShowExerciseInfo}/>
         <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
         <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
-        <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} />
+        <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} context={context} />
       </zstack>
     );
   },

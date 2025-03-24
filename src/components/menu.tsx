@@ -103,7 +103,7 @@ export const Menu = (props: MenuProps): JSX.Element => {
         {props.isAuthor ?
         <hstack padding="small" onPress={props.toggleEditMode}><spacer/><icon lightColor='black' darkColor='white' name={props.editMode ? "edit-fill": "edit"} /><spacer/><text lightColor='black' darkColor='white' weight="bold">{props.editMode ? "Dis" : "En"}able Edit Mode</text><spacer/></hstack>
         :<vstack/>}
-        <hstack padding="small" onPress={props.stats}><spacer/><icon lightColor='black' darkColor='white' name="topic-business" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Stats</text><spacer/></hstack>
+        <hstack padding="small" onPress={props.stats}><spacer/><icon lightColor='black' darkColor='white' name="topic-business" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Progress</text><spacer/></hstack>
         <hstack padding="small" onPress={props.achievements}><spacer/><icon lightColor='black' darkColor='white' name="contest" /><spacer/><text lightColor='black' darkColor='white' weight="bold">Achievements</text><spacer/></hstack>
         <hstack padding="small" onPress={() => props.context.ui.navigateTo("https://developers.reddit.com/apps/workit-app")}><spacer/><icon lightColor='black' darkColor='white' name='help' /><spacer/><text lightColor='black' darkColor='white' weight="bold">Go To README</text><spacer/></hstack>
       </vstack>

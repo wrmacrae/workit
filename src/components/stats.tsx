@@ -75,9 +75,20 @@ export const Stats = (props: StatsProps): JSX.Element => {
     const labelToStats = shallowFlattenJson(data)
     const label = Object.keys(labelToStats)[statIndex]
     const statCount = Object.keys(labelToStats).length
+    if (statCount == 0) {
+        return (
+            <zstack alignment="center middle" height="100%" width="100%">
+                <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowStats(false)} />
+                <vstack alignment="center middle" height="100%" width="100%">
+                    <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="center middle" padding="medium" cornerRadius="medium">
+                        <text wrap>Repeat an exercise with more weight, more reps, or for a longer time to unlock Progress graphs!</text>
+                    </vstack>
+                </vstack>
+           </zstack>)
+    }
     // return <text>{data.squat}</text>
-    const svgWidth = 400;
-    const svgHeight = 200;
+    const svgWidth = (props.context.dimensions?.width ?? 400) * 0.8 ;
+    const svgHeight = (props.context.dimensions?.height ?? 300) * 0.8 ;;
     const padding = 40;
     const values = labelToStats[label]
     // Normalize Y values

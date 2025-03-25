@@ -18,6 +18,7 @@ interface CategoryProps {
     icon: IconName
     acquired: number
     targets: string[]
+    current: string
 }
 
 function calculateStreak(workouts: {member: string; score: number;}[]) {
@@ -44,7 +45,11 @@ const COLORS = ["neutral-content", "neutral-content", "neutral-content", "#CD7F3
 
 const Category = (props: CategoryProps): JSX.Element => {
     return (<vstack gap="small">
-        <text size="large">{props.name}</text>
+        <hstack>
+            <text size="large">{props.name}</text>
+            <spacer grow />
+            <text size="medium">{` (Current: ${props.current})`}</text>
+        </hstack>
         <hstack gap="small">{[...Array(props.targets.length).keys()].map(i =>
             <vstack height="50px" width="50px" alignment="center middle" backgroundColor={props.acquired > i ? "success-background" : "secondary-background"} cornerRadius="small" padding="xsmall">
                 <icon size="large" color={COLORS[i]} name={props.acquired > i ? `${props.icon}-fill` : props.icon} />
@@ -98,11 +103,11 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowAchievements(false)} />
             <vstack alignment="center middle" height="100%" width="100%">
                 <vstack onPress={props.context.dimensions?.width <= 410 ? () => props.setShowAchievements(false) : undefined} lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium" gap="medium">
-                    <Category name={"Number of Workouts"} targets={workoutTargets.map(n => String(n))} acquired={workoutsAquired} icon={"contest"}/>
-                    <Category name={"Weekly Streek"} targets={streakTargets.map(n => String(n))} acquired={streakAquired} icon={"calendar"} />
-                    <Category name={"Total Weight"} targets={weightTargets.map(n => String(n).replace(/000$/,",000"))} acquired={weightAcquired} icon={"topic-law"} />
-                    <Category name={"Total Reps"} targets={repsTargets.map(n => String(n).replace(/000$/,",000"))} acquired={repsAquired} icon={"activity"} />
-                    <Category name={"Total Active Time"} targets={hourTargets.map(hours => `${hours}h`)} acquired={timeAquired} icon={"history"} />
+                    <Category name={"Number of Workouts"} targets={workoutTargets.map(n => String(n))} acquired={workoutsAquired} current={String(data.workouts)} icon={"contest"}/>
+                    <Category name={"Weekly Streek"} targets={streakTargets.map(n => String(n))} acquired={streakAquired} current={String(data.streak)} icon={"calendar"} />
+                    <Category name={"Total Weight"} targets={weightTargets.map(n => String(n).replace(/000$/,",000"))} acquired={weightAcquired} current={String(data.weight).replace(/000000$/,",000000").replace(/000$/,",000")} icon={"topic-law"} />
+                    <Category name={"Total Reps"} targets={repsTargets.map(n => String(n).replace(/000$/,",000"))} acquired={repsAquired} current={String(data.reps).replace(/000$/,",000")} icon={"activity"} />
+                    <Category name={"Total Active Time"} targets={hourTargets.map(hours => `${hours}h`)} acquired={timeAquired} current={millisToString(data.time)} icon={"history"} />
                 </vstack>
             </vstack>
         </zstack>

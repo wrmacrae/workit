@@ -96,7 +96,7 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowAchievements(false)} />
             <vstack alignment="center middle" height="100%" width="100%">
-                <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium" gap="medium">
+                <vstack onPress={props.context.dimensions?.width <= 410 ? () => props.setShowAchievements(false) : undefined} lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium" gap="medium">
                     <Category name={"Number of Workouts"} targets={workoutTargets.map(n => String(n))} acquired={workoutsAquired} icon={"contest"}/>
                     <Category name={"Weekly Streek"} targets={streakTargets.map(n => String(n))} acquired={streakAquired} icon={"calendar"} />
                     <Category name={"Total Weight"} targets={weightTargets.map(n => String(n).replace(/000$/,",000"))} acquired={weightAcquired} icon={"topic-law"} />

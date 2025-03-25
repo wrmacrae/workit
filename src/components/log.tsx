@@ -29,7 +29,7 @@ export const Log = (props: LogProps): JSX.Element => {
     if (error) {
         return <text>Error: {error.message}</text>;
     }
-    const validWorkouts: WorkoutData[] = data?.filter(workout => workout.complete)
+    const validWorkouts: WorkoutData[] = data?.filter(workout => workout.complete).reverse()
     const workoutDates = validWorkouts.map(workout => (new Date(workout.complete ?? 0)).toLocaleDateString(navigator.language, {
         weekday: "long",
         year: "numeric",

@@ -53,7 +53,7 @@ export const ProgressBar = (props: ProgressBarProps): JSX.Element => {
     function darkColorForSet(done: boolean, supersetIndex: number, exerciseIndex: number, selectedExerciseIndex: number) {
         return COLOR_TO_DARK[colorForSet(done, supersetIndex, exerciseIndex, selectedExerciseIndex)]        
     }
-    return (<vstack height="100%" alignment="start middle"><vstack alignment="start middle" height="80%" padding="small" gap="small" cornerRadius='small'>
+    return (<vstack height="100%" alignment="start middle"><vstack alignment="start middle" height="80%" gap="small" cornerRadius='small'>
         {props.supersetDoneness.map((superset: boolean[][], supersetIndex: number) => <hstack grow gap="small" onPress={() => props.setExerciseIndex(exerciseIndexFinder[supersetIndex][0])} padding="xsmall" cornerRadius="small" border="thin" borderColor={colorForSet(false, supersetIndex, 0, props.exerciseIndex)}>
             {superset.map((exercise, exerciseIndex) => <vstack grow gap="small">
                 {exercise.map((set) => <vstack cornerRadius="full"

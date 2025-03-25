@@ -1,7 +1,9 @@
 import { Devvit, StateSetter, useAsync, useState } from "@devvit/public-api"
 import { ExerciseData, loadingWorkout, SetData, WorkoutData } from "../types.js"
-import { millisToString, setTimes, totalDuration } from "./timer.js"
+import { setTimes } from "./timer.js"
+import { millisToString, totalDuration } from "../utils.js"
 import { keyForWorkout } from "../keys.js"
+import { asyncMap } from "../utils.js"
 
 interface StatsProps {
     workout: WorkoutData
@@ -9,17 +11,6 @@ interface StatsProps {
     showStats: boolean
     setShowStats: StateSetter<boolean>
     context: Devvit.Context
-}
-
-function weightProgression(exercises: ExerciseData[]) {
-
-}
-
-async function asyncMap<T, U>(
-    array: T[],
-    callback: (item: T, index: number, array: T[]) => Promise<U>
-  ): Promise<U[]> {
-    return Promise.all(array.map(callback));
 }
 
 function shallowFlattenJson<T extends Record<string, any>>(obj: T): Record<string, any> {

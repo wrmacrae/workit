@@ -1,7 +1,9 @@
 import { Devvit, IconName, StateSetter, useAsync, useState } from "@devvit/public-api"
 import { ExerciseData, loadingWorkout, SetData, WorkoutData } from "../types.js"
-import { millisToString, setTimes, totalDuration } from "./timer.js"
+import { setTimes } from "./timer.js"
+import { millisToString, totalDuration } from "../utils.js"
 import { keyForWorkout } from "../keys.js"
+import { asyncMap } from "../utils.js"
 
 interface AchievmentsProps {
     workout: WorkoutData
@@ -16,13 +18,6 @@ interface CategoryProps {
     icon: IconName
     acquired: number
     targets: string[]
-}
-
-async function asyncMap<T, U>(
-    array: T[],
-    callback: (item: T, index: number, array: T[]) => Promise<U>
-  ): Promise<U[]> {
-    return Promise.all(array.map(callback));
 }
 
 function calculateStreak(workouts: {member: string; score: number;}[]) {

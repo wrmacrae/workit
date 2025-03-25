@@ -1,6 +1,6 @@
 import { Devvit, StateSetter, useInterval, useState } from '@devvit/public-api';
 import { SetData, WorkoutData } from '../types.js';
-import { millisToString } from './timer.js';
+import { millisToString } from "../utils.js";
 
 interface RepsProps {
     workout: WorkoutData

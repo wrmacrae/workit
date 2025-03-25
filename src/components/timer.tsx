@@ -1,5 +1,6 @@
 import { Devvit, useInterval } from "@devvit/public-api"
 import { ExerciseData, SetData, WorkoutData } from "../types.js"
+import { millisToString, totalDuration } from "../utils.js"
 
 interface TimerProps {
     workout: WorkoutData
@@ -12,23 +13,6 @@ function workoutDuration(times: number[]) {
 
 function restDuration(times: number[]) {
     return Date.now() - Math.max(...times)
-}
-
-export function totalDuration(times: number[]) {
-    return Math.max(...times) - Math.min(...times)
-}
-
-export function millisToString(time: number) {
-    const date = new Date(Date.UTC(0,0,0,0,0,0,time))
-    var parts = [
-      Math.floor(time / 3600000),
-      date.getUTCMinutes(),
-      date.getUTCSeconds()
-    ]
-    if (parts[0] == 0) {
-        parts.splice(0, 1)
-    }
-    return parts.map((s,i) => i > 0 ? String(s).padStart(2,'0'): s).join(':');
 }
 
 function monospaceString(s: string, color: string) {

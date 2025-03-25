@@ -1,6 +1,7 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api"
 import { ExerciseData, SetData, WorkoutData } from "../types.js"
-import { millisToString, setTimes, totalDuration } from "./timer.js"
+import { setTimes } from "./timer.js"
+import { millisToString, totalDuration } from "../utils.js"
 
 interface CompletionProps {
     workout: WorkoutData

@@ -8,7 +8,7 @@ import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
-import { millisToString, Timer } from './components/timer.js';
+import { Timer } from './components/timer.js';
 import { EmptyError } from './components/emptyerror.js';
 import { IncompleteWarning } from './components/incompletewarning.js';
 import { Completion } from './components/completion.js';
@@ -17,6 +17,8 @@ import { Summary } from './components/summary.js';
 import { Stats } from './components/stats.js';
 import { Achievements } from './components/achievements.js';
 import { ExerciseInfo } from './components/exerciseinfo.js';
+import { formatWorkoutAsComment } from './utils.js';
+import { Log } from './components/log.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -101,23 +103,6 @@ function allSetsDone(data: WorkoutData) {
 
 function workoutIsEmpty(workout: WorkoutData) {
   return workout.exercises.flatMap((exercise: ExerciseData) => exercise.sets.map((set: SetData) => (set.reps || set.time) ?? 0)).every((value: number) => value == 0);
-}
-
-function formatExerciseAsComment(exercise: ExerciseData) {
-  var comment = `${exercise.name}: `
-  const sets: SetData[] = exercise.sets.filter((set: SetData) => set.reps || set.time)
-  const setsAsStrings = sets.map((set: SetData) => `${set.reps || millisToString(set.time!)}` + (set.weight ? ` at ${set.weight}` : ``))
-  if (new Set(setsAsStrings).size == 1 && sets.length > 1)
-  {
-    comment += `${setsAsStrings.length}x${sets[0].reps || millisToString(sets[0].time!)}` + (sets[0].weight ? ` at ${sets[0].weight}` : ``)
-  } else {
-    comment += setsAsStrings.join(", ")
-  }
-  return comment;
-}
-
-function formatWorkoutAsComment(workout: WorkoutData) {
-  return "I did this workout!\n\n" + workout.exercises.filter((exercise: ExerciseData) => !exercise.sets.every((set: SetData) => !set.reps && !set.time)).map(formatExerciseAsComment).join("\n\n")
 }
 
 async function addExerciseForUser(context: JobContext, exercise: ExerciseData) {
@@ -256,6 +241,7 @@ Devvit.addCustomPostType({
     const [showCompletion, setShowCompletion] = useState(false)
     const [showStats, setShowStats] = useState(false)
     const [showAchievements, setShowAchievements] = useState(false)
+    const [showLog, setShowLog] = useState(false)
     const [showExerciseInfo, setShowExerciseInfo] = useState<ExerciseData[]>([])
     const [plateCalculatorIndices, setPlateCalculatorIndices] = useState<number[]>([])
     const [showMenu, setShowMenu] = useState(false)
@@ -478,7 +464,7 @@ Devvit.addCustomPostType({
       workout.complete = Date.now()
       setWorkout(workout)
       setPendingUpdates(prev => [...prev, workout]);
-      context.reddit.submitComment({id: context.postId!, text: formatWorkoutAsComment(workout) })
+      context.reddit.submitComment({id: context.postId!, text: "I did this workout!\n\n" + formatWorkoutAsComment(workout) })
       const nameToSets = workout.exercises.reduce((acc, exercise: ExerciseData) => {
         acc[exercise.name] = JSON.stringify(exercise.sets)
         return acc
@@ -576,6 +562,7 @@ Devvit.addCustomPostType({
           exerciseCollection={exerciseCollection}
           stats={() => {setShowStats(true); setShowMenu(false)}}
           achievements={() => {setShowAchievements(true); setShowMenu(false)}}
+          log={() => {setShowLog(true); setShowMenu(false)}}
         />
         {showEmptyError ? <EmptyError setExerciseIndex={setExerciseIndex} setShowEmptyError={setShowEmptyError} /> : <vstack/>}
         {showIncompleteWarning ? <IncompleteWarning setExerciseIndex={setExerciseIndex} setShowIncompleteWarning={setShowIncompleteWarning} completeWorkout={forceCompleteWorkout} /> : <vstack/>}
@@ -588,10 +575,11 @@ Devvit.addCustomPostType({
           setPendingUpdates={setPendingUpdates}
           barbellWeight={settings.barbellWeight}
           />
-        <ExerciseInfo showExerciseInfo={showExerciseInfo} setShowExerciseInfo={setShowExerciseInfo}/>
+        <ExerciseInfo showExerciseInfo={showExerciseInfo} setShowExerciseInfo={setShowExerciseInfo} workout={workout} workouts={workouts} context={context}/>
         <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
         <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
         <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} context={context} />
+        <Log workout={workout} workouts={workouts} showLog={showLog} setShowLog={setShowLog} context={context} />
       </zstack>
     );
   },

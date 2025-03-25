@@ -96,7 +96,7 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
     const repsTargets = [100, 200, 500, 1000, 2000, 3000]
     const repsAquired = acquiredTargets(repsTargets, data.reps)
     const hourTargets = [1, 2, 4, 8, 16, 24]
-    const timeAquired = acquiredTargets(hourTargets.map(h => h + 60 * 60 * 1000), data.time)+6
+    const timeAquired = acquiredTargets(hourTargets.map(h => h + 60 * 60 * 1000), data.time)
     return (
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowAchievements(false)} />

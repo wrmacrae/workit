@@ -1,7 +1,7 @@
 import { Devvit, IconName, StateSetter, useAsync, useState } from "@devvit/public-api"
 import { ExerciseData, loadingWorkout, SetData, WorkoutData } from "../types.js"
 import { setTimes } from "./timer.js"
-import { millisToString, totalDuration } from "../utils.js"
+import { millisToString, totalActiveTime, totalDuration } from "../utils.js"
 import { keyForWorkout } from "../keys.js"
 import { asyncMap } from "../utils.js"
 
@@ -70,7 +70,7 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
             streak: calculateStreak(props.workouts),
             weight: allWorkouts.flatMap(workout => workout.exercises).flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => (set.reps ?? 0) * (set.weight ?? 0)).reduce((acc, val) => acc + val, 0),
             reps: allWorkouts.flatMap(workout => workout.exercises).flatMap((exercise: ExerciseData) => exercise.sets).map((set: SetData) => (set.reps ?? 0)).reduce((acc, val) => acc + val, 0),
-            time: allWorkouts.map(workout => totalDuration(setTimes(workout))).reduce((acc, val) => acc + val, 0)
+            time: allWorkouts.map(workout => totalActiveTime(workout)).reduce((acc, val) => acc + val, 0)
         }
         return data
     }, {
@@ -91,7 +91,8 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
     const repsTargets = [100, 200, 500, 1000, 2000, 3000]
     const repsAquired = acquiredTargets(repsTargets, data.reps)
     const hourTargets = [1, 2, 4, 8, 16, 24]
-    const timeAquired = acquiredTargets(hourTargets.map(h => h + 60 * 60 * 1000), data.time)
+    console.log(data.time)
+    const timeAquired = acquiredTargets(hourTargets.map(h => h * 60 * 60 * 1000), data.time)
     return (
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowAchievements(false)} />
@@ -101,7 +102,7 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
                     <Category name={"Weekly Streek"} targets={streakTargets.map(n => String(n))} acquired={streakAquired} icon={"calendar"} />
                     <Category name={"Total Weight"} targets={weightTargets.map(n => String(n).replace(/000$/,",000"))} acquired={weightAcquired} icon={"topic-law"} />
                     <Category name={"Total Reps"} targets={repsTargets.map(n => String(n).replace(/000$/,",000"))} acquired={repsAquired} icon={"activity"} />
-                    <Category name={"Total Time"} targets={hourTargets.map(hours => `${hours}h`)} acquired={timeAquired} icon={"history"} />
+                    <Category name={"Total Active Time"} targets={hourTargets.map(hours => `${hours}h`)} acquired={timeAquired} icon={"history"} />
                 </vstack>
             </vstack>
         </zstack>

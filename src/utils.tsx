@@ -1,3 +1,4 @@
+import { setTimes } from './components/timer.js';
 import { ExerciseData, SetData, WorkoutData } from './types.js';
 
 export async function asyncMap<T, U>(
@@ -37,4 +38,13 @@ export function millisToString(time: number) {
         parts.splice(0, 1)
     }
     return parts.map((s, i) => i > 0 ? String(s).padStart(2, '0') : s).join(':')
+}
+export function totalActiveTime(workout: WorkoutData) {
+    const times = setTimes(workout).sort()
+    var totalActiveTime = 0
+    for (let i = 0; i < times.length - 1; i++) {
+        //TODO add reps*10s to each exercise
+        totalActiveTime += Math.min(120000, times[i + 1] - times[i])
+    }
+    return totalActiveTime
 }

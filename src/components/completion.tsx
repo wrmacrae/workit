@@ -1,7 +1,7 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api"
 import { ExerciseData, SetData, WorkoutData } from "../types.js"
 import { setTimes } from "./timer.js"
-import { millisToString, totalDuration } from "../utils.js"
+import { millisToString, totalActiveTime, totalDuration } from "../utils.js"
 
 interface CompletionProps {
     workout: WorkoutData
@@ -103,16 +103,6 @@ function calculateStreak(workouts: {member: string; score: number;}[]) {
         endOfWeek -= WEEK
     }
     return [weeks, workoutCount]
-}
-
-function totalActiveTime(workout: WorkoutData) {
-    const times = setTimes(workout).sort()
-    var totalActiveTime = 0
-    for (let i = 0; i < times.length - 1; i++) {
-        //TODO add reps*10s to each exercise
-        totalActiveTime += Math.min(120000, times[i + 1] - times[i])
-    }
-    return totalActiveTime
 }
 
 function didYouKnow(workout: WorkoutData) {

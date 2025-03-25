@@ -45,12 +45,17 @@ function calculateStreak(workouts: {member: string; score: number;}[]) {
     return maxWeeks;
 }
 
-const COLORS = ["Red", "Blue", "Green", "#CD7F32", "#C0C0C0", "#FFD700"]
+const COLORS = ["neutral-content", "neutral-content", "neutral-content", "#CD7F32", "#C0C0C0", "#FFD700"]
 
 const Category = (props: CategoryProps): JSX.Element => {
     return (<vstack gap="small">
         <text size="large">{props.name}</text>
-        <hstack gap="small">{[...Array(props.targets.length).keys()].map(i => <vstack><icon size="large" color={COLORS[i]} name={props.acquired > i ? `${props.icon}-fill` : props.icon} /><text>{props.targets[i]}</text></vstack>)}</hstack>
+        <hstack gap="small">{[...Array(props.targets.length).keys()].map(i =>
+            <vstack height="50px" width="50px" alignment="center middle" backgroundColor={props.acquired > i ? "success-background" : "secondary-background"} cornerRadius="small" padding="xsmall">
+                <icon size="large" color={COLORS[i]} name={props.acquired > i ? `${props.icon}-fill` : props.icon} />
+                <text size="xsmall">{props.targets[i]}</text>
+            </vstack>)
+        }</hstack>
     </vstack>)
 }
 
@@ -91,7 +96,7 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
     const repsTargets = [100, 200, 500, 1000, 2000, 3000]
     const repsAquired = acquiredTargets(repsTargets, data.reps)
     const hourTargets = [1, 2, 4, 8, 16, 24]
-    const timeAquired = acquiredTargets(hourTargets.map(h => h + 60 * 60 * 1000), data.time)
+    const timeAquired = acquiredTargets(hourTargets.map(h => h + 60 * 60 * 1000), data.time)+6
     return (
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowAchievements(false)} />
@@ -99,8 +104,8 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
                 <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium" gap="medium">
                     <Category name={"Number of Workouts"} targets={workoutTargets.map(n => String(n))} acquired={workoutsAquired} icon={"contest"}/>
                     <Category name={"Weekly Streek"} targets={streakTargets.map(n => String(n))} acquired={streakAquired} icon={"calendar"} />
-                    <Category name={"Total Weight"} targets={weightTargets.map(n => String(n))} acquired={weightAcquired} icon={"topic-law"} />
-                    <Category name={"Total Reps"} targets={repsTargets.map(n => String(n))} acquired={repsAquired} icon={"activity"} />
+                    <Category name={"Total Weight"} targets={weightTargets.map(n => String(n).replace(/000$/,",000"))} acquired={weightAcquired} icon={"topic-law"} />
+                    <Category name={"Total Reps"} targets={repsTargets.map(n => String(n).replace(/000$/,",000"))} acquired={repsAquired} icon={"activity"} />
                     <Category name={"Total Time"} targets={hourTargets.map(hours => `${hours}h`)} acquired={timeAquired} icon={"history"} />
                 </vstack>
             </vstack>

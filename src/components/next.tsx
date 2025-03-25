@@ -45,7 +45,7 @@ export const Next = (props: NextProps): JSX.Element => {
             <spacer grow />
             <vstack>
             <text>Next:</text>
-            <text>{nextExercises[1].name}{nextExercises[1].sets[1].weight ? ` at ${nextExercises[1].sets[1].weight}` : ""}</text>
+            <text>{nextExercises[1].name}{nextExercises[1].sets[0].weight ? ` at ${nextExercises[1].sets[0].weight}` : ""}</text>
             </vstack>
         </hstack>
     </vstack>)

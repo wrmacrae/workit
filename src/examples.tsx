@@ -136,6 +136,109 @@ const hipthrust: ExerciseData = {
       weight: 45
     })
 }
+const shoulderExtension: ExerciseData = {
+  name: "Shoulder Extension",
+  image: "shoulderextension.gif",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `Place your hands on some object overhead, while keeping your arms straight.
+You may bend forward to an object, as long as it is still "overhead".
+Attempt to push your head and chest through so that the arms are pressed behind the body.`
+}
+const underarmShoulderStretch: ExerciseData = {
+  name: "Underarm Shoulder Stretch",
+  image: "underarmshoulderstretch.jpg",
+  sets: [{targetTime: 60000}],
+  info: `While seated, place your hands behind you on the ground, fingers pointing away, and slide your butt forward, keeping the arms straight.
+This can also be done by placing your hands behind you on a tall object, and squatting/crouching down.`
+}
+const rearHandClaspLeft: ExerciseData = {
+  name: "Rear Hand Clasp Left",
+  image: "rearhandclaspleft.jpg",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `With your left hand overhead and your right hand behind your lower back, attempt to grasp fingertips behind your back.`
+}
+const rearHandClaspRight: ExerciseData = {
+  name: "Rear Hand Clasp Right",
+  image: "rearhandclaspright.jpg",
+  sets: [{targetTime: 60000}],
+  info: `With your right hand overhead and your left hand behind your lower back, attempt to grasp fingertips behind your back.`
+}
+const fullSquat: ExerciseData = {
+  name: "Full Squat",
+  image: "fullsquat.png",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `Keeping your heels on the ground, squat down as far as your body will allow.
+Keep your arms inside the knees and press them outward.
+Feel free to hold on to something for balance, as it should not affect the stretch, but free balancing is preferred.`
+}
+const standingPike: ExerciseData = {
+  name: "Standing Pike",
+  image: "standingpike.jpg",
+  sets: [{targetTime: 60000}],
+  info: `Bend forward, hinging at the hips while trying to keep the back flat.
+Do not try to touch your toes - instead, try to touch the ground 1-2 feet in front of your toes.
+This will help you hinge at the hips and not bend at the back.
+When you can get decewntly below parallel with a flat back, then you can grab your calves and attempt to pull your head to your knees.`
+}
+const kneelinglungeleft: ExerciseData = {
+  name: "Kneeling Lunge Left",
+  image: "kneelinglungeleft.gif",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `Kneel on the ground, and place your left foot in front of you, flat on the ground, in a lunge position with the right knee and top of your right foot on the ground.
+Squeeze the glutes and press the pelvis forward, stretching your right leg.
+Move the left foot forward as needed to ensure the left shin remains roughtly vertical, and not bending backward or leaning forwards.`
+}
+const kneelinglungeright: ExerciseData = {
+  name: "Kneeling Lunge Right",
+  image: "kneelinglungeright.gif",
+  sets: [{targetTime: 60000}],
+  info: `Kneel on the ground, and place your right foot in front of you, flat on the ground, in a lunge position with the left knee and top of your left foot on the ground.
+Squeeze the glutes and press the pelvis forward, stretching your left leg.
+Move the right foot forward as needed to ensure the right shin remains roughtly vertical, and not bending backward or leaning forwards.`
+}
+const butterfly: ExerciseData = {
+  name: "Butterfly",
+  image: "butterfly.jpg",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `Sit on the ground, and bring the bottoms of your feet together in front of you.
+Hold your feet together with your hands and pull them slightly towards you.
+Place your elbows against the inside of your thighs and carefully push the thighs downward.
+Keep the back flat and your head aligned with your spine.
+This should create a stretch through your inner thighs.`
+}
+const backbend: ExerciseData = {
+  name: "Backbend",
+  image: "backbend.jpg",
+  sets: [{targetTime: 60000}],
+  info: `While lying on your back, bend your kneeds and put your feet near your buttocks.
+By squeezing the glutes, lift the hips and pelvis off the floor and press it toward the ceiling`
+}
+const lyingTwistLeft: ExerciseData = {
+  name: "Lying Twist Left",
+  image: "lyingtwistleft.jpg",
+  sets: [{targetTime: 60000}],
+  superset: true,
+  info: `Lie on the ground, facing upward, and extend your arms out to the sides.
+Lift your left leg up at a 90 degree angle (bend the knee as much as necessary).
+Now lower your left leg to the right side of your torso while keeping your shoulders on the ground.
+Attempt to touch the ground with the left leg while maintaining shoulders on the floor.
+Turn your head to the left.`
+}
+const lyingTwistRight: ExerciseData = {
+  name: "Lying Twist Right",
+  image: "lyingtwistright.jpg",
+  sets: [{targetTime: 60000}],
+  info: `Lie on the ground, facing upward, and extend your arms out to the sides.
+Lift your right leg up at a 90 degree angle (bend the knee as much as necessary).
+Now lower your right leg to the right side of your torso while keeping your shoulders on the ground.
+Attempt to touch the ground with the right leg while maintaining shoulders on the floor.
+Turn your head to the right.`
+}
 export const strongLiftsA = {
   title: "Strong Lifts A",
   exercises: [
@@ -164,6 +267,23 @@ export const strongLiftsB = {
     hipthrust
   ]
 };
+export const startingStretching = {
+  title: "Starting Stretching",
+  exercises: [
+    shoulderExtension,
+    underarmShoulderStretch,
+    rearHandClaspLeft,
+    rearHandClaspRight,
+    fullSquat,
+    standingPike,
+    kneelinglungeleft,
+    kneelinglungeright,
+    butterfly,
+    backbend,
+    lyingTwistLeft,
+    lyingTwistRight
+  ]
+}
 export const supersetsWorkout = {
   title: "Superset Workout",
   exercises: [
@@ -279,6 +399,17 @@ Devvit.addMenuItem({
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
     const post = await makeWorkitPost(context, strongLiftsB)
+  },
+});
+
+Devvit.addMenuItem({
+  label: 'New Starting Stretching',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await makeWorkitPost(context, startingStretching)
   },
 });
 

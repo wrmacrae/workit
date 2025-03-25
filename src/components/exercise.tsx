@@ -150,19 +150,22 @@ function xs(sets: SetData[]) {
 }
 
 function weights(props: ExerciseProps, sets: SetData[]) {
-    var weights = []
-    for (let i = 0; i < sets.length; i++)  {
-        if (sets[i].weight != undefined) {
-            weights.push(<Weight weight={sets[i].weight} increaseWeight={increaseWeightForIndex(props, i)} decreaseWeight={decreaseWeightForIndex(props, i)} onPress={() => props.setPlateCalculatorIndices([props.exerciseIndex, i])}/>)
-        } else {
-            weights.push(<DisabledWeight />)
-        }
-    }
-    return (
-    <vstack alignment="center middle" gap="small">
-        <text size="small" alignment='center middle'>Weight</text>\
-        {weights}
-    </vstack>)
+  if (sets.every(set => set.weight == undefined)) {
+    return (<vstack />)
+  }  
+  var weights = []
+  for (let i = 0; i < sets.length; i++)  {
+      if (sets[i].weight != undefined) {
+          weights.push(<Weight weight={sets[i].weight} increaseWeight={increaseWeightForIndex(props, i)} decreaseWeight={decreaseWeightForIndex(props, i)} onPress={() => props.setPlateCalculatorIndices([props.exerciseIndex, i])}/>)
+      } else {
+          weights.push(<DisabledWeight />)
+      }
+  }
+  return (
+  <vstack alignment="center middle" gap="small">
+      <text size="small" alignment='center middle'>Weight</text>\
+      {weights}
+  </vstack>)
 }
 
 function summarizeExerciseTemplate(exercise: ExerciseData) {
@@ -256,7 +259,6 @@ export const Exercise = (props: ExerciseProps): JSX.Element => {
             <hstack alignment="center middle" gap="small">
               {setNumbers(exercise.sets, onRepsClick)}
               {reps(props, exercise.sets, onRepsClick)}
-              {xs(exercise.sets)}
               {weights(props, exercise.sets)}
             </hstack>
         </vstack>

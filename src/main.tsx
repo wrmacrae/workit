@@ -51,6 +51,12 @@ Devvit.addSchedulerJob({
   onRun: async (event, context) => {
     const workouts = JSON.parse(await context.settings.get('daily-workouts'))
     const workout = workouts[getDaysSince(await context.settings.get('daily-workout-start')) % workouts.length]
+    workout.name = workout.name + ` (${(new Date(workout.complete ?? 0)).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    })})`
     makeWorkitPostForJob(context, workout)
   }
 })

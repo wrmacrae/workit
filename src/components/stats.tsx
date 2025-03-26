@@ -80,7 +80,7 @@ export const Stats = (props: StatsProps): JSX.Element => {
     // return <text>{data.squat}</text>
     const svgWidth = (props.context.dimensions?.width ?? 400) * 0.8 ;
     const svgHeight = (props.context.dimensions?.height ?? 300) * 0.8 ;;
-    const padding = 40;
+    const padding = 50;
     const values = labelToStats[label]
     // Normalize Y values
     const maxY = Math.max(...values);
@@ -99,7 +99,7 @@ export const Stats = (props: StatsProps): JSX.Element => {
     for (let yValue = minY; yValue <= maxY; yValue += 10) {
         const y = svgHeight - padding - (yValue - minY) * scaleY;
         gridLines.push(`<line x1="${padding}" y1="${y}" x2="${svgWidth - padding}" y2="${y}" stroke="#ccc" strokeWidth="1" />
-            <text x="${padding - 25}" y="${y + 4}" fontSize="12" textAnchor="end" fill="#ccc">${yValue}</text>`);
+            <text x="${padding - 30}" y="${y + 4}" fontSize="12" textAnchor="end" fill="#ccc">${yValue}</text>`);
     }
     
     const pathData = `M ${points.join(" L ")}`;

@@ -3,6 +3,7 @@ import { ExerciseData, SetData, WorkoutData } from "../types.js"
 import { setTimes } from "./timer.js"
 import { millisToString, totalDuration } from "../utils.js"
 import { asyncMap, formatExerciseAsComment } from "../utils.js"
+import { keyForWorkout } from "../keys.js"
 
 interface ExerciseInfoProps {
     showExerciseInfo: ExerciseData[]
@@ -18,7 +19,7 @@ export const ExerciseInfo = (props: ExerciseInfoProps): JSX.Element => {
     }
     const {data, loading, error} = useAsync(async () => {
         const allWorkouts: WorkoutData[] = await asyncMap(props.workouts, async workout => JSON.parse(await props.context.redis.get(keyForWorkout(workout.member, props.context.userId!)) ?? JSON.stringify(loadingWorkout)))
-        const allExercises: ExerciseData[] = allWorkouts.flatMap(workout => workout.exercises)
+        const allExercises: ExerciseData[] = allWorkouts.flatMap(workout => workout.exercises).reverse()
         return allExercises.find(exercise => exercise.name == props.showExerciseInfo[0].name)
     })
     return (

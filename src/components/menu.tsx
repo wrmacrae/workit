@@ -20,7 +20,7 @@ interface MenuProps {
 
 export const MiniMenu = (props: MenuProps): JSX.Element => {
   return (<vstack padding="small" gap="small">
-      <vstack gap='large'>
+      <vstack gap='medium'>
         <button onPress={props.stats} icon="topic-business">Progress</button>
         <button onPress={props.achievements} icon="contest">Achievements</button>
         <button onPress={props.log} icon="wiki">Logbook</button>

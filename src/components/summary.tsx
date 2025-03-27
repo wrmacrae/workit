@@ -1,5 +1,5 @@
 import { Devvit, SetStateAction, StateSetter } from "@devvit/public-api"
-import { ExerciseData, WorkoutData } from "../types.js"
+import { ExerciseData, PostInfo, WorkoutData } from "../types.js"
 import { ExerciseSummary } from "./exercise.js"
 import { MiniMenu } from "./menu.js"
 import { MiniProgressBar } from "./progressbar.js"
@@ -24,8 +24,7 @@ interface SummaryProps {
     supersetDoneness: boolean[][][]
     setExerciseIndex: StateSetter<number>
     exerciseIndex: number
-    newPostUrls: string[]
-    newWorkouts: WorkoutData[]
+    newPosts: PostInfo[]
   }
 
 function convertTo2DArray(array: any[]) {
@@ -34,6 +33,19 @@ function convertTo2DArray(array: any[]) {
       result.push(array.slice(i, i + 2));
     }
     return result;
+}
+
+function ago(time: number) {
+  const diff = Date.now() - time
+  if (diff < 60*1000) {
+    return "<1 min. ago"
+  } else if (diff < 60*60*1000) {
+    return `${Math.floor(diff/60/1000)} min. ago`
+  } else if (diff < 24*60*60*1000) {
+    return `${Math.floor(diff/60/60/1000)} hr. ago`
+  } else {
+    return `${Math.floor(diff/24/60/60/1000)} days ago`
+  }
 }
   
 export const Summary = (props: SummaryProps): JSX.Element => {
@@ -45,10 +57,14 @@ export const Summary = (props: SummaryProps): JSX.Element => {
         <vstack>
           <MiniMenu settings={props.settings} returnToSummary={props.returnToSummary} setShowMenu={props.setShowMenu} showMenu={props.showMenu} resetWorkout={props.resetWorkout} isAuthor={props.isAuthor} toggleEditMode={props.toggleEditMode} editMode={props.editMode} context={props.context} exerciseCollection={props.exerciseCollection} stats={props.stats} achievements={props.achievements} log={props.log} />
           <spacer grow />
-          {props.newWorkouts ?
+          {props.newPosts ?
           <vstack alignment="center middle" gap="small" padding="small">
-            <text size="large">Go To a New Workout:</text>
-            {props.newWorkouts.map((workout, index) => <button onPress={() => props.context.ui.navigateTo(props.newPostUrls[index])}>{workout.title}</button>)}
+            {props.newPosts.map(post =>
+                <vstack alignment="center middle">
+                  <text size="small" color="neutral-content-weak">{ago(post.createdAt)}</text>
+                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{post.workout.title}</button>
+                </vstack>
+              )}
           </vstack>
           : <vstack/>}
         </vstack>
@@ -65,9 +81,14 @@ export const Summary = (props: SummaryProps): JSX.Element => {
         <image url="background.jpg" imageWidth={1334} imageHeight={749} height="100%" width="100%" resizeMode="cover"/>
         <hstack alignment="center middle" backgroundColor="neutral-background" cornerRadius="large" padding="large">
             <MiniMenu settings={props.settings} returnToSummary={props.returnToSummary} setShowMenu={props.setShowMenu} showMenu={props.showMenu} resetWorkout={props.resetWorkout} isAuthor={props.isAuthor} toggleEditMode={props.toggleEditMode} editMode={props.editMode} context={props.context} exerciseCollection={props.exerciseCollection} stats={props.stats} achievements={props.achievements} log={props.log} />
-            {props.newWorkouts ?
-            <vstack alignment="center middle" gap="large" padding="small">
-              {props.newWorkouts.map((workout, index) => <button icon="play" onPress={() => props.context.ui.navigateTo(props.newPostUrls[index])}>{workout.title}</button>)}
+            {props.newPosts ?
+            <vstack alignment="center middle" gap="small" padding="small">
+              {props.newPosts.map(post =>
+                <vstack alignment="center middle">
+                  <text size="small" color="neutral-content-weak">{ago(post.createdAt)}</text>
+                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{post.workout.title}</button>
+                </vstack>
+              )}
             </vstack>
             : <vstack/>}
         </hstack>

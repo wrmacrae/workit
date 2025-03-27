@@ -28,3 +28,9 @@ export type SettingsData = {
   barbellWeight: number
   notifications: boolean
 }
+export type PostInfo = {
+  workout: WorkoutData
+  url: string
+  id: string
+  createdAt: number
+}

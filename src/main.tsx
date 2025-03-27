@@ -3,7 +3,7 @@ import { Devvit, JobContext, JSONObject, Post, RedditAPIClient, RedisClient, Set
 import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
-import { ExerciseData, WorkoutData, SetData, loadingWorkout, SettingsData } from './types.js';
+import { ExerciseData, WorkoutData, SetData, loadingWorkout, SettingsData, PostInfo } from './types.js';
 import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
@@ -266,8 +266,7 @@ Devvit.addCustomPostType({
     const [lastCompletion, setLastCompletion] = useState({})
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
     const [workouts, setWorkouts] = useState<{member: string; score: number;}[]>([])
-    const [newPostUrls, setNewPostUrls] = useState<string[]>([])
-    const [newWorkouts, setNewWorkouts] = useState<WorkoutData[]>([])
+    const [newPosts, setNewPosts] = useState<PostInfo[]>([])
     var { error } = useAsync(async () => {
       if (pendingUpdates.length > 0) {
         const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
@@ -307,23 +306,26 @@ Devvit.addCustomPostType({
         limit: 1000,
         pageSize: 1000
       }).all()
-      let newWorkouts = []
-      let newPostUrls = []
+      let newPostInfos : PostInfo[] = []
       for (let post of newPosts) {
-        const workout = JSON.parse(await context.redis.get(keyForWorkout(post.id, context.userId!)) ?? (await context.redis.get(keyForTemplate(post.id)) ?? JSON.stringify(loadingWorkout)))
+        const workout: WorkoutData = JSON.parse(await context.redis.get(keyForWorkout(post.id, context.userId!)) ?? (await context.redis.get(keyForTemplate(post.id)) ?? JSON.stringify(loadingWorkout)))
         if (!workout.complete && workout.exercises.length) {
-          newWorkouts.push(workout)
-          newPostUrls.push(post.url)
-          if (newWorkouts.length >= 4) {
+          newPostInfos.push({
+            workout: workout,
+            url: post.url,
+            id: post.id,
+            createdAt: post.createdAt.getTime()
+          })
+          if (newPostInfos.length >= 4) {
             break;
           }
         }
       }
-      return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts, newWorkouts, newPostUrls]
+      return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts, newPostInfos]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, {member: string; score: number;}[], WorkoutData[], string[]], error) => {
-        var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts, newWorkouts, newPostUrls] = loadedData
+      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, {member: string; score: number;}[], PostInfo[]], error) => {
+        var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts, newPostInfos] = loadedData
         setLastCompletion(lastCompletionData)
         if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
           settingsData.increment = settings.increment
@@ -342,8 +344,7 @@ Devvit.addCustomPostType({
         }
         setTemplate(JSON.parse(templateWorkout))
         setWorkouts(workouts)
-        setNewWorkouts(newWorkouts)
-        setNewPostUrls(newPostUrls)
+        setNewPosts(newPostInfos)
       }
     });
     if (asyncDataResult.loading) {
@@ -537,7 +538,7 @@ Devvit.addCustomPostType({
           achievements={() => setShowAchievements(true)}
           log={() => setShowLog(true)} supersetDoneness={supersetDoneness}
           setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}
-          newWorkouts={newWorkouts} newPostUrls={newPostUrls} />
+          newPosts={newPosts} />
           <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion} setSummaryMode={setSummaryMode}/>
           <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
           <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} context={context} />

@@ -305,12 +305,12 @@ Devvit.addCustomPostType({
       const newPosts = await context.reddit.getNewPosts({
         subredditName: (await context.reddit.getCurrentSubreddit()).name,
         limit: 1000,
-        pageSize: 100
+        pageSize: 1000
       }).all()
       let newWorkouts = []
       let newPostUrls = []
       for (let post of newPosts) {
-        const workout = JSON.parse(await context.redis.get(keyForWorkout(post.id, context.userId!)) ?? JSON.stringify(loadingWorkout))
+        const workout = JSON.parse(await context.redis.get(keyForWorkout(post.id, context.userId!)) ?? (await context.redis.get(keyForTemplate(post.id)) ?? JSON.stringify(loadingWorkout)))
         if (!workout.complete && workout.exercises.length) {
           newWorkouts.push(workout)
           newPostUrls.push(post.url)

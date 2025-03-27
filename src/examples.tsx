@@ -1,5 +1,5 @@
 import { Devvit } from "@devvit/public-api";
-import { ExerciseData, loadingWorkout } from "./types.js";
+import { ExerciseData, loadingWorkout, WorkoutData } from "./types.js";
 import { makeWorkitPost } from "./main.js";
 
 export const squat: ExerciseData = {
@@ -424,7 +424,7 @@ Devvit.addMenuItem({
   },
 });
 
-var pinned = loadingWorkout
+var pinned = JSON.parse(JSON.stringify(loadingWorkout))
 pinned.title = "Work Out in Reddit!"
 
 Devvit.addMenuItem({

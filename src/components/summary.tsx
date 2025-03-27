@@ -61,14 +61,17 @@ export const Summary = (props: SummaryProps): JSX.Element => {
       </hstack>)
     }
     if (!props.workout || !props.workout.exercises.length) {
-      return (<hstack height="100%" width="100%" alignment="center middle">
-          <MiniMenu settings={props.settings} returnToSummary={props.returnToSummary} setShowMenu={props.setShowMenu} showMenu={props.showMenu} resetWorkout={props.resetWorkout} isAuthor={props.isAuthor} toggleEditMode={props.toggleEditMode} editMode={props.editMode} context={props.context} exerciseCollection={props.exerciseCollection} stats={props.stats} achievements={props.achievements} log={props.log} />
-          {props.newWorkouts ?
-          <vstack alignment="center middle" gap="large" padding="small">
-            {props.newWorkouts.map((workout, index) => <button icon="play" onPress={() => props.context.ui.navigateTo(props.newPostUrls[index])}>{workout.title}</button>)}
-          </vstack>
-          : <vstack/>}
-      </hstack>)
+      return (<zstack height="100%" width="100%" alignment="center middle">
+        <image url="background.jpg" imageWidth={1334} imageHeight={749} height="100%" width="100%" resizeMode="cover"/>
+        <hstack alignment="center middle" backgroundColor="neutral-background" cornerRadius="large" padding="large">
+            <MiniMenu settings={props.settings} returnToSummary={props.returnToSummary} setShowMenu={props.setShowMenu} showMenu={props.showMenu} resetWorkout={props.resetWorkout} isAuthor={props.isAuthor} toggleEditMode={props.toggleEditMode} editMode={props.editMode} context={props.context} exerciseCollection={props.exerciseCollection} stats={props.stats} achievements={props.achievements} log={props.log} />
+            {props.newWorkouts ?
+            <vstack alignment="center middle" gap="large" padding="small">
+              {props.newWorkouts.map((workout, index) => <button icon="play" onPress={() => props.context.ui.navigateTo(props.newPostUrls[index])}>{workout.title}</button>)}
+            </vstack>
+            : <vstack/>}
+        </hstack>
+      </zstack>)
     }
     return(<zstack height="100%" width="100%" alignment="center middle">
         <vstack grow height="100%" width="100%" alignment="center middle" gap="medium" padding='small' onPress={() => props.setSummaryMode(false)}>

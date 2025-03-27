@@ -152,7 +152,7 @@ async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
     title: workout.title ?? "New Workout",
     subredditName: subredditName,
     preview: (
-      <Summary supersetGrid={workout.exercises.map((exercise) => [exercise])} setSummaryMode={() => console.log("Not logged in")}/>
+      <Summary workout={workout} supersetGrid={workout.exercises.map((exercise) => [exercise])}/>
     ),
   });
   await context.redis.set(keyForTemplate(post.id), JSON.stringify(workout));

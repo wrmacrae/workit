@@ -164,6 +164,9 @@ async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
 async function notifyUsers(context: JobContext, post: Post, workout: WorkoutData) {
   // Users who finished last workout 0.0-2.5 days ago
   const users = await context.redis.zRange(keyForUsersByLastCompletion(), Date.now() - 216000000, Date.now(), { by: "score" })
+  if (!workout.exercises.length) {
+    return
+  }
   for (const {member} of users) {
     const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(member)) ?? "{}"))
     if (settings && !settings.notifications) {

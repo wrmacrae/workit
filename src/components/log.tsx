@@ -47,6 +47,17 @@ export const Log = (props: LogProps): JSX.Element => {
         pages.slice(-1)[0].push(...workoutLines[i])
         pages.slice(-1)[0].push("")
     }
+    if (!workoutLines.length) {
+        return (
+            <zstack alignment="center middle" height="100%" width="100%">
+                <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowStats(false)} />
+                <vstack alignment="center middle" height="100%" width="100%">
+                    <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="center middle" padding="medium" cornerRadius="medium">
+                        <text wrap>Complete an exercise in Workit to start your Logbook!</text>
+                    </vstack>
+                </vstack>
+           </zstack>)
+    }
     return (
         <zstack alignment="center middle" height="100%" width="100%">
             <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowLog(false)} />

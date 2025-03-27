@@ -19,7 +19,3 @@ export function keyForUsersByLastCompletion() {
 export function keyForAllWorkouts(userId: string) {
   return `all-workouts-for-user-${userId}`;
 }
-//TODO: Store this stuff
-export function keyForAllTemplates(userId: string) {
-  return `all-templates-for-user-${userId}`;
-}

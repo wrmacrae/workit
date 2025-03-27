@@ -52,7 +52,6 @@ Devvit.addSchedulerJob({
     const workouts = JSON.parse(await context.settings.get('daily-workouts'))
     const workout = workouts[getDaysSince(await context.settings.get('daily-workout-start')) % workouts.length]
     workout.name = workout.name + ` (${(new Date(workout.complete ?? 0)).toLocaleDateString("en-US", {
-      weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric"
@@ -116,6 +115,9 @@ async function addExerciseForUser(context: JobContext, exercise: ExerciseData) {
 }
 
 async function addExercisesForUser(context: JobContext, workout: WorkoutData) {
+  if (!workout.exercises || !workout.exercises.length) {
+    return
+  }
   const fieldValues = JSON.parse(JSON.stringify(workout.exercises)).reduce((acc, exercise: ExerciseData) => {
     delete exercise.superset
     acc[exercise.name] = JSON.stringify(exercise);
@@ -142,7 +144,7 @@ export async function makeWorkitPost(context: Devvit.Context, workout: WorkoutDa
 
 async function makeWorkitPostForJob(context: JobContext, workout: WorkoutData) {
   workout.author = context.userId!
-  if (!workout.exercises || workout.exercises.length == 0) {
+  if ((!workout.exercises || workout.exercises.length == 0) && !workout.title) {
     return
   }
   const subredditName = (await context.reddit.getCurrentSubreddit()).name
@@ -261,6 +263,8 @@ Devvit.addCustomPostType({
     const [lastCompletion, setLastCompletion] = useState({})
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
     const [workouts, setWorkouts] = useState<{member: string; score: number;}[]>([])
+    const [newPostUrls, setNewPostUrls] = useState<string[]>([])
+    const [newWorkouts, setNewWorkouts] = useState<WorkoutData[]>([])
     var { error } = useAsync(async () => {
       if (pendingUpdates.length > 0) {
         const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
@@ -295,11 +299,28 @@ Devvit.addCustomPostType({
       );
       const settings: SettingsData = JSON.parse((await context.redis.get(keyForSettings(context.userId!)) ?? "{}"))
       const workouts = await context.redis.zRange(keyForAllWorkouts(context.userId ?? "ANONYMOUS"), 0, Date.now())
-      return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts]
+      const newPosts = await context.reddit.getNewPosts({
+        subredditName: (await context.reddit.getCurrentSubreddit()).name,
+        limit: 1000,
+        pageSize: 100
+      }).all()
+      let newWorkouts = []
+      let newPostUrls = []
+      for (let post of newPosts) {
+        const workout = JSON.parse(await context.redis.get(keyForWorkout(post.id, context.userId!)) ?? JSON.stringify(loadingWorkout))
+        if (!workout.complete && workout.exercises.length) {
+          newWorkouts.push(workout)
+          newPostUrls.push(post.url)
+          if (newWorkouts.length >= 4) {
+            break;
+          }
+        }
+      }
+      return [startedWorkout, templateWorkout, lastCompletionData, settings, workouts, newWorkouts, newPostUrls]
     }, {
       depends: [context.postId!, context.userId!],
-      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, {member: string; score: number;}[]], error) => {
-        var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts] = loadedData
+      finally: (loadedData : [string, string, {[k: string]: any}, SettingsData, {member: string; score: number;}[], WorkoutData[], string[]], error) => {
+        var [startedWorkout, templateWorkout, lastCompletionData, settingsData, workouts, newWorkouts, newPostUrls] = loadedData
         setLastCompletion(lastCompletionData)
         if (!settingsData.hasOwnProperty("increment") || !settingsData.increment) {
           settingsData.increment = settings.increment
@@ -318,6 +339,8 @@ Devvit.addCustomPostType({
         }
         setTemplate(JSON.parse(templateWorkout))
         setWorkouts(workouts)
+        setNewWorkouts(newWorkouts)
+        setNewPostUrls(newPostUrls)
       }
     });
     if (asyncDataResult.loading) {
@@ -479,7 +502,6 @@ Devvit.addCustomPostType({
       context.redis.zAdd(keyForAllWorkouts(context.userId!), {member: context.postId!, score: Date.now()})
       context.redis.zAdd(keyForUsersByLastCompletion(), {member: context.userId!, score: Date.now()})
     }
-
     const completeWorkout = () => {
       if (workoutIsEmpty(workout)) {
         setShowEmptyError(true)
@@ -501,9 +523,23 @@ Devvit.addCustomPostType({
     const advanceExercise = () => {
       setExerciseIndex(exerciseIndex + (supersetWithNext(context, workout, exerciseIndex) ? 2 : 1))
     }
-    if (summaryMode) {
+    if (summaryMode || !workout.exercises) {
       return (
-        <Summary supersetGrid={supersetGrid} setSummaryMode={setSummaryMode} />
+        <zstack height="100%" width="100%" alignment="start top">
+          <Summary workout={workout} supersetGrid={supersetGrid} setSummaryMode={setSummaryMode} settings={() => context.ui.showForm(settingsForm)} returnToSummary={returnToSummary} setShowMenu={setShowMenu} showMenu={showMenu} context={context}
+          resetWorkout={resetWorkout(lastCompletion)} toggleEditMode={toggleEditMode} editMode={editMode}
+          isAuthor={workout.author == context.userId}
+          exerciseCollection={exerciseCollection}
+          stats={() => setShowStats(true)}
+          achievements={() => setShowAchievements(true)}
+          log={() => setShowLog(true)} supersetDoneness={supersetDoneness}
+          setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}
+          newWorkouts={newWorkouts} newPostUrls={newPostUrls} />
+          <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion} setSummaryMode={setSummaryMode}/>
+          <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
+          <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} context={context} />
+          <Log workout={workout} workouts={workouts} showLog={showLog} setShowLog={setShowLog} context={context} />
+        </zstack>
       )
     }
     return (
@@ -511,7 +547,7 @@ Devvit.addCustomPostType({
         <Timer workout={workout} exerciseIndex={exerciseIndex} />
         <Next workout={workout} supersetGrid={supersetGrid} exerciseIndex={exerciseIndex} addExercises={() => context.ui.showForm(optionalForm)}/>
         <hstack height="100%" width="100%" alignment="center middle" padding="small">
-          <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex}/>
+          <ProgressBar supersetDoneness={supersetDoneness} setExerciseIndex={setExerciseIndex} exerciseIndex={exerciseIndex} height={"80%"} setSummaryMode={setSummaryMode}/>
           <vstack grow alignment="center middle" gap="small">
             {exerciseIndex > 0 ? <button icon="caret-up" onPress={() => setExerciseIndex(exerciseIndex - (supersetWithNext(context, workout, exerciseIndex-2) ? 2 : 1))}/> : <button icon="back" onPress={returnToSummary}/>}
             {editMode ? <icon name="add" onPress={() => context.ui.showForm(insertExerciseForms[exerciseIndex])}/> : <hstack/>}
@@ -582,7 +618,7 @@ Devvit.addCustomPostType({
           barbellWeight={settings.barbellWeight}
           />
         <ExerciseInfo showExerciseInfo={showExerciseInfo} setShowExerciseInfo={setShowExerciseInfo} workout={workout} workouts={workouts} context={context}/>
-        <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion}/>
+        <Completion workout={workout} workouts={workouts} showCompletion={showCompletion} setShowCompletion={setShowCompletion} setSummaryMode={setSummaryMode}/>
         <Stats workout={workout} workouts={workouts} showStats={showStats} setShowStats={setShowStats} context={context} />
         <Achievements workout={workout} workouts={workouts} showAchievements={showAchievements} setShowAchievements={setShowAchievements} context={context} />
         <Log workout={workout} workouts={workouts} showLog={showLog} setShowLog={setShowLog} context={context} />

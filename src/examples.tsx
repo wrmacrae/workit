@@ -1,5 +1,5 @@
 import { Devvit } from "@devvit/public-api";
-import { ExerciseData } from "./types.js";
+import { ExerciseData, loadingWorkout } from "./types.js";
 import { makeWorkitPost } from "./main.js";
 
 export const squat: ExerciseData = {
@@ -421,5 +421,19 @@ Devvit.addMenuItem({
     const { reddit, ui } = context;
     const subreddit = await reddit.getCurrentSubreddit();
     const post = await makeWorkitPost(context, supersetsWorkout)
+  },
+});
+
+var pinned = loadingWorkout
+pinned.title = "Work Out in Reddit!"
+
+Devvit.addMenuItem({
+  label: 'New Pinnable Summary',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { reddit, ui } = context;
+    const subreddit = await reddit.getCurrentSubreddit();
+    const post = await makeWorkitPost(context, pinned)
   },
 });

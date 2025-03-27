@@ -96,7 +96,6 @@ export const Achievements = (props: AchievmentsProps): JSX.Element => {
     const repsTargets = [100, 200, 500, 1000, 2000, 3000]
     const repsAquired = acquiredTargets(repsTargets, data.reps)
     const hourTargets = [1, 2, 4, 8, 16, 24]
-    console.log(data.time)
     const timeAquired = acquiredTargets(hourTargets.map(h => h * 60 * 60 * 1000), data.time)
     return (
         <zstack alignment="center middle" height="100%" width="100%">

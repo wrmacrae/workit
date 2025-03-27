@@ -8,6 +8,7 @@ interface CompletionProps {
     workouts: {member: string; score: number;}[]
     showCompletion: boolean
     setShowCompletion: StateSetter<boolean>
+    setSummaryMode: StateSetter<boolean>
 }
 
 const DID_YOU_KNOWS = [
@@ -130,7 +131,7 @@ export const Completion = (props: CompletionProps): JSX.Element => {
     }
     return (
         <zstack alignment="center middle" height="100%" width="100%">
-            <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => props.setShowCompletion(false)} />
+            <vstack alignment="center middle" height="100%" width="100%" lightBackgroundColor="rgba(64, 64, 64, 0.3)" darkBackgroundColor="rgba(0, 0, 0, 0.5)" onPress={() => {props.setShowCompletion(false); props.setSummaryMode(true)}} />
             <vstack alignment="center middle" height="100%" width="100%">
                 <vstack lightBackgroundColor="white" darkBackgroundColor="neutral-background-strong" alignment="start middle" padding="medium" cornerRadius="medium">
                     <text wrap>{stat(props)}</text>

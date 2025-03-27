@@ -3,7 +3,13 @@ import { Devvit, StateSetter } from '@devvit/public-api';
 interface ProgressBarProps {
     supersetDoneness: boolean[][][]
     setExerciseIndex: StateSetter<number>
+    setSummaryMode: StateSetter<boolean>
     exerciseIndex: number
+    height: Devvit.Blocks.SizeString
+}
+
+export const MiniProgressBar = (props: ProgressBarProps): JSX.Element => {
+    return (<vstack height="100%" padding="small">{ProgressBar(props)}</vstack>)
 }
 
 export const ProgressBar = (props: ProgressBarProps): JSX.Element => {
@@ -53,15 +59,18 @@ export const ProgressBar = (props: ProgressBarProps): JSX.Element => {
     function darkColorForSet(done: boolean, supersetIndex: number, exerciseIndex: number, selectedExerciseIndex: number) {
         return COLOR_TO_DARK[colorForSet(done, supersetIndex, exerciseIndex, selectedExerciseIndex)]        
     }
-    return (<vstack height="100%" alignment="start middle"><vstack alignment="start middle" height="80%" gap="small" cornerRadius='small'>
-        {props.supersetDoneness.map((superset: boolean[][], supersetIndex: number) => <hstack grow gap="small" onPress={() => props.setExerciseIndex(exerciseIndexFinder[supersetIndex][0])} padding="xsmall" cornerRadius="small" border="thin" borderColor={colorForSet(false, supersetIndex, 0, props.exerciseIndex)}>
-            {superset.map((exercise, exerciseIndex) => <vstack grow gap="small">
-                {exercise.map((set) => <vstack cornerRadius="full"
-                    lightBackgroundColor={lightColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
-                    darkBackgroundColor={darkColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
-                    width={`${width}px`} grow />)}
-            </vstack>)}
-        </hstack>)}
-    </vstack></vstack>)
+    return (
+        <vstack height="100%" alignment="start middle">
+            <vstack alignment="start middle" height={props.height} gap="small" cornerRadius='small'>
+                {props.supersetDoneness.map((superset: boolean[][], supersetIndex: number) => <hstack grow gap="small" height={`${Number(props.height.toString().replace("%", ""))/superset.length}%`} onPress={() => {props.setExerciseIndex(exerciseIndexFinder[supersetIndex][0]); props.setSummaryMode(false)}} padding="xsmall" cornerRadius="small" border="thin" borderColor={colorForSet(false, supersetIndex, 0, props.exerciseIndex)}>
+                    {superset.map((exercise, exerciseIndex) => <vstack gap="small">
+                        {exercise.map((set) => <vstack cornerRadius="full"
+                            lightBackgroundColor={lightColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
+                            darkBackgroundColor={darkColorForSet(set, supersetIndex, exerciseIndex, props.exerciseIndex)}
+                            width={`${width}px`} grow />)}
+                    </vstack>)}
+                </hstack>)}
+            </vstack>
+        </vstack>)
 }
 

@@ -18,6 +18,17 @@ interface MenuProps {
     log: () => void
 }
 
+export const MiniMenu = (props: MenuProps): JSX.Element => {
+  return (<vstack padding="small" gap="small">
+      <vstack gap='large'>
+        <button onPress={props.stats} icon="topic-business">Progress</button>
+        <button onPress={props.achievements} icon="contest">Achievements</button>
+        <button onPress={props.log} icon="wiki">Logbook</button>
+        <button onPress={() => props.context.ui.navigateTo("https://developers.reddit.com/apps/workit-app")} icon='help'>Go To README</button>
+        </vstack>
+      </vstack>)
+}
+
 export const Menu = (props: MenuProps): JSX.Element => {
     const exerciseForm = useForm(
         {

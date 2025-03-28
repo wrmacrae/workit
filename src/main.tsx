@@ -98,8 +98,11 @@ Devvit.addSchedulerJob({
   onRun: async (event, context) => {
     const settings = await context.settings.getAll()
     const dailyWorkoutStrings = Array(8).map((_, index) => settings[`daily-workout-${index}`])
-    dailyWorkoutStrings.splice(dailyWorkoutStrings.findIndex(string => string == ""))
+    dailyWorkoutStrings.splice(dailyWorkoutStrings.findIndex(string => string == undefined || string == ""))
     const workouts = dailyWorkoutStrings.map(s => JSON.parse(String(s)))
+    if (!workouts.length) {
+      return
+    }
     const workout = workouts[getDaysSince(Number(settings['daily-workout-start'])) % workouts.length]
     workout.name = workout.name + ` (${(new Date(workout.complete ?? 0)).toLocaleDateString("en-US", {
       year: "numeric",

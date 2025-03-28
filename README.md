@@ -50,10 +50,3 @@ Workit settings allow automatic daily creation of workouts. As a moderator, you 
 - To start the daily posts as soon as possible, set "Milliseconds since epoch for first Daily Workout to post" to the number you get from running `Date.now()` in a javascript console.
 
 In its current form, the initial configuration of daily workouts is indended to be done in partnership with a Workit developer. Please reach out to u/Sqerp for help!
-
-## Changelog:
-2025-03-08
-- Submit v0 for publish
-
-2025-03-28
-- Final version for hackathon

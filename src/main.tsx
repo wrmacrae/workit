@@ -109,6 +109,9 @@ Devvit.addSchedulerJob({
       return
     }
     const workout = workouts[getDaysSince(Number(settings['daily-workout-start'])) % workouts.length]
+    if (!workout.exercises.length) {
+      return
+    }
     workout.title = workout.title + ` (${(new Date()).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",

@@ -54,5 +54,6 @@ In its current form, the initial configuration of daily workouts is indended to 
 ## Changelog:
 2025-03-08
 - Submit v0 for publish
+
 2025-03-28
 - Final version for hackathon

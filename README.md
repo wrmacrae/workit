@@ -1,14 +1,14 @@
-## Workit
+# Workit
 
 Workit lets you write, share, and track workouts in Reddit. Posts allow each user to enter their own reps, weights, and/or times, and then share their results in a comment when they finish.
 
 Workit reduces decisions about which exercise to do. It helps make a workout smoother by recording what you did with only a few clicks, and suggesting weights and reps using information from authors plus your exercise history. But Workit does not provide expertise on exactly how to do an exercise or whether it's a good fit for an individual, so users are heavilly encouraged to seek input from experts, which could happen elsewhere on Reddit, in person, or through research.
 
-#### TL;DR Demo Video
+## TL;DR Demo Video
 
 [https://youtu.be/LofNNB2jv4c](https://youtu.be/LofNNB2jv4c)
 
-#### Example subreddits:
+## Example subreddits:
 [https://www.reddit.com/r/workit5x5/](https://www.reddit.com/r/workit5x5/)
 
 [https://www.reddit.com/r/StretchIt/](https://www.reddit.com/r/StretchIt/)
@@ -16,7 +16,7 @@ Workit reduces decisions about which exercise to do. It helps make a workout smo
 [https://www.reddit.com/r/workit5x5/](https://www.reddit.com/r/workit5x5/)
 
 
-#### To Do a Workout
+## To Do a Workout
 - Find an existing Workit post, such as [Strong Lifts B (March 28, 2025)](https://www.reddit.com/r/workit5x5/comments/1jm0f9q/strong_lifts_b_march_28_2025/)
 - Click the blue buttons to progress through the exercises, until you have clicked Complete
 - You can jump around and enter or change reps and weights of any set at any time. Buttons let you move between adjacent exercises, and a progress bar on the left can skip to any part of a workout.
@@ -32,7 +32,7 @@ Workit reduces decisions about which exercise to do. It helps make a workout smo
 
 Note: Each Redditor sees their own personal progress, sets, and weights for a workout separately. Your changes appear within the app, but do not affect the post that other users will see. The only shared information with other users is when you Complete the workout, which submits a comment below the post detailing what you did.
 
-#### To Author Workouts
+## To Author Workouts
 
 A variety of tools allow authoring and editting of workouts manually or automatically. A Workit workout is a collection of exercises intended to be done together within one session, and those exercises are composed of sets, where each set involves reps (repetitions) of the same movement at a certain weight. 
 
@@ -41,7 +41,7 @@ A variety of tools allow authoring and editting of workouts manually or automati
 - Once you have defined the exercises you will use, open the menu in the top left and click New Workout for a form that authors a new workout. You workout needs a name, plus a collection of existing exercises which you will pick from drop-downs. Some basic exercises are available already.
 - After creating a workout, the menu allows the author to enter Edit Mode, where you can change and add exercises in the workout. Like the original workout, these changes will be available to everyone who starts your workout.
 
-#### Daily Workouts
+## Daily Workouts
 
 Workit settings allow automatic daily creation of workouts. As a moderator, you need to fill in:
 - "First Daily Workout to automatically post." Choose the workout you want to show up first.
@@ -51,7 +51,7 @@ Workit settings allow automatic daily creation of workouts. As a moderator, you 
 
 In its current form, the initial configuration of daily workouts is indended to be done in partnership with a Workit developer. Please reach out to u/Sqerp for help!
 
-#### Changelog:
+## Changelog:
 2025-03-08
 - Submit v0 for publish
 2025-03-28

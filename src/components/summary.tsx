@@ -3,6 +3,7 @@ import { ExerciseData, PostInfo, WorkoutData } from "../types.js"
 import { ExerciseSummary } from "./exercise.js"
 import { MiniMenu } from "./menu.js"
 import { MiniProgressBar } from "./progressbar.js"
+import { ago, convertTo2DArray } from "../utils.js"
 
 interface SummaryProps {
     settings: () => void
@@ -25,32 +26,19 @@ interface SummaryProps {
     setExerciseIndex: StateSetter<number>
     exerciseIndex: number
     newPosts: PostInfo[]
-  }
-
-function convertTo2DArray(array: any[]) {
-    const result = [];
-    for (let i = 0; i < array.length; i += 2) {
-      result.push(array.slice(i, i + 2));
-    }
-    return result;
 }
 
-function ago(time: number) {
-  const diff = Date.now() - time
-  if (diff < 60*1000) {
-    return "<1 min. ago"
-  } else if (diff < 60*60*1000) {
-    return `${Math.floor(diff/60/1000)} min. ago`
-  } else if (diff < 24*60*60*1000) {
-    return `${Math.floor(diff/60/60/1000)} hr. ago`
-  } else {
-    return `${Math.floor(diff/24/60/60/1000)} days ago`
+function ellipsesForMobile(s: string, context: Devvit.Context) {
+  const characters = Math.floor(18 + Math.max(0, ((context.dimensions?.width ?? 400) - 400) / 200 * 18))
+  if (characters >= s.length) {
+    return s
   }
+  return s.substring(0, characters) + "..."
 }
-  
+
 export const Summary = (props: SummaryProps): JSX.Element => {
     if (props.supersetGrid.every((row) => row.length <= 1) && props.supersetGrid.flat().length > 4) {
-        props.supersetGrid = convertTo2DArray(props.supersetGrid.flat())
+        props.supersetGrid = convertTo2DArray(props.supersetGrid.flat(), 2)
     }
     if (props.workout && props.workout.complete) {
       return (<hstack height="100%" width="100%" alignment="center middle">
@@ -62,7 +50,7 @@ export const Summary = (props: SummaryProps): JSX.Element => {
             {props.newPosts.map(post =>
                 <vstack alignment="center middle">
                   <text size="small" color="neutral-content-weak">{ago(post.createdAt)}</text>
-                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{post.workout.title}</button>
+                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{ellipsesForMobile(post.workout.title ?? "New Workout", props.context)}</button>
                 </vstack>
               )}
           </vstack>
@@ -86,7 +74,7 @@ export const Summary = (props: SummaryProps): JSX.Element => {
               {props.newPosts.map(post =>
                 <vstack alignment="center middle">
                   <text size="small" color="neutral-content-weak">{ago(post.createdAt)}</text>
-                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{post.workout.title}</button>
+                  <button icon="play" onPress={() => props.context.ui.navigateTo(post.url)}>{ellipsesForMobile(post.workout.title ?? "New Workout", props.context)}</button>
                 </vstack>
               )}
             </vstack>

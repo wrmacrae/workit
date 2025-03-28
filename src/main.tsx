@@ -93,23 +93,41 @@ function getDaysSince(startTime: number) {
   return Math.floor(daysSince);
 }
 
+const DAILY_EXERCISE_ACTION_NAME = 'daily-exercise';
+
 Devvit.addSchedulerJob({
-  name: 'daily-exercise',
+  name: DAILY_EXERCISE_ACTION_NAME,
   onRun: async (event, context) => {
     const settings = await context.settings.getAll()
-    const dailyWorkoutStrings = Array(8).map((_, index) => settings[`daily-workout-${index}`])
-    dailyWorkoutStrings.splice(dailyWorkoutStrings.findIndex(string => string == undefined || string == ""))
+    const dailyWorkoutStrings = Array(8).fill(0).map((_, index) => settings[`daily-workout-${index}`])
+    const emptyIndex = dailyWorkoutStrings.findIndex(string => string == undefined || string == "");
+    if (emptyIndex >= 0) {
+      dailyWorkoutStrings.splice(emptyIndex)
+    }
     const workouts = dailyWorkoutStrings.map(s => JSON.parse(String(s)))
     if (!workouts.length) {
       return
     }
     const workout = workouts[getDaysSince(Number(settings['daily-workout-start'])) % workouts.length]
-    workout.title = workout.title + ` (${(new Date(workout.complete ?? 0)).toLocaleDateString("en-US", {
+    workout.title = workout.title + ` (${(new Date()).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric"
     })})`
     makeWorkitPostForJob(context, workout)
+  }
+})
+
+Devvit.addMenuItem({
+  label: "Extra Daily Workout",
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (event, context) => {
+    context.scheduler.runJob({
+      name: DAILY_EXERCISE_ACTION_NAME,
+      data: {},
+      runAt: new Date()
+    })
   }
 })
 
@@ -119,7 +137,7 @@ Devvit.addTrigger({
     try {
       const jobId = await context.scheduler.runJob({
         cron: '0 12 * * *',
-        name: 'daily-exercise',
+        name: DAILY_EXERCISE_ACTION_NAME,
         data: {},
       });
       await context.redis.set('jobId', jobId);
@@ -235,7 +253,7 @@ async function notifyUsers(context: JobContext, post: Post, workout: WorkoutData
 }
 
 function supersetWithNext(context: Devvit.Context, workout: WorkoutData, index: number) {
-  return index >= 0 && workout.exercises.length > index + 1 && context.dimensions!.width > 400 && workout.exercises[index].superset;
+  return index >= 0 && workout.exercises.length > index + 1 && (context.dimensions?.width ?? 400) > 400 && workout.exercises[index].superset;
 }
 function supersetWithPrevious(context: Devvit.Context, workout: WorkoutData, index: number) {
   return index > 0 && supersetWithNext(context, workout, index - 1);

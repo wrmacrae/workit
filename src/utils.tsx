@@ -47,4 +47,25 @@ export function totalActiveTime(workout: WorkoutData) {
         totalActiveTime += Math.min(120000, times[i + 1] - times[i])
     }
     return totalActiveTime
+}export function ago(time: number) {
+  const diff = Date.now() - time
+  if (diff < 60 * 1000) {
+    return "<1 min. ago"
+  } else if (diff < 60 * 60 * 1000) {
+    return `${Math.floor(diff / 60 / 1000)} min. ago`
+  } else if (diff < 24 * 60 * 60 * 1000) {
+    return `${Math.floor(diff / 60 / 60 / 1000)} hr. ago`
+  } else if (diff < 36 * 60 * 60 * 1000) {
+    return `1 day ago`
+  } else {
+    return `${Math.round(diff / 24 / 60 / 60 / 1000)} days ago`
+  }
 }
+export function convertTo2DArray(array: any[], width: number) {
+  const result = []
+  for (let i = 0; i < array.length; i += width) {
+    result.push(array.slice(i, i + width))
+  }
+  return result
+}
+

@@ -284,8 +284,8 @@ export const startingStretching = {
     lyingTwistRight
   ]
 }
-export const supersetsWorkout = {
-  title: "Superset Workout",
+export const legsAndAbs = {
+  title: "Legs and Abs",
   exercises: [
     {
       name: "Weighted Lunge",
@@ -320,11 +320,11 @@ export const supersetsWorkout = {
       superset: true,
       sets: [
         {
-          target: 15,
+          target: 10,
           weight: 45
         },
         {
-          target: 12,
+          target: 10,
           weight: 45
         },
         {
@@ -379,50 +379,388 @@ export const supersetsWorkout = {
   ],
   optionalExercises: []
 };
+export const backAndShoulders = {
+  title: "Back and Shoulders",
+  exercises: [
+    {
+      name: "Scapular Push Up",
+      image: "scapularpushup.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        }),
+      superset: true
+    },
+    {
+      name: "Arnold Dumbbell Press",
+      image: "arnolddumbbellpress.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+    },
+    {
+      name: "Good Morning",
+      image: "goodmorning.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        }),
+      superset: true,
+      info: "The band is optional!"
+    },
+    {
+      name: "Lateral Dumbbell Raise",
+      image: "lateraldumbbellraise.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+    {
+      name: "Renegade Row",
+      image: "renegaderow.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+      superset: true
+    },
+    {
+      name: "Dumbbell Delt Raise",
+      image: "dumbbelldeltraise.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+    {
+      name: "Superman",
+      image: "superman.gif",
+      sets: Array(3).fill(
+        {
+          targetTime: 30000,
+        }),
+      superset: true
+    },
+    {
+      name: "Shrug",
+      image: "shrug.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 15
+        },
+        {
+          target: 12,
+          weight: 15
+        },
+        {
+          target: 10,
+          weight: 15
+        },
+      ],
+    },
+  ]
+}
+export const chestAndAbs = {
+  title: "Chest and Abs",
+  exercises: [
+    {
+      name: "Dumbbell Bench Press",
+      image: "dumbbellbenchpress.gif",
+      superset: true,
+      info: "You can do these on a mat if your prefer.",
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+    },
+    {
+      name: "Plank Crunch",
+      image: "plankcrunch.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        })
+    },
+    {
+      name: "Push Up",
+      image: "pushup.gif",
+      info: "Start with your knees on the ground if push-ups are hard.",
+      superset: true,
+      sets: Array(3).fill(
+        {
+          target: 15,
+        })
+    },
+    {
+      name: "Leg Lift",
+      image: "leglift.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        })
+    },
+    {
+      name: "Dumbbell Fly",
+      image: "dumbbellfly.gif",
+      superset: true,
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+    },
+    {
+      name: "Jackknife Crunch",
+      image: "jackknifecrunch.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        })
+    }, {
+      name: "Dumbbell Decline Press",
+      image: "dumbbelldeclinepress.gif",
+      superset: true,
+      info: "You can do this by holding a glute bridge on the floor.",
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+    },
+    plank
+  ],
+  optionalExercises: []
+};
+export const tricepsAndBiceps = {
+  title: "Triceps and Biceps",
+  exercises: [
+    {
+      name: "Tricep Kickback",
+      image: "tricepkickback.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+      superset: true
+    },
+    {
+      name: "Concentration Curl",
+      image: "concentrationcurl.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+    {
+      name: "Overhead Dumbbell Extension",
+      image: "overheaddumbbellextension.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 10
+        },
+        {
+          target: 12,
+          weight: 10
+        },
+        {
+          target: 10,
+          weight: 10
+        },
+      ],
+      superset: true
+    },
+    {
+      name: "Dumbbell Hammer Curl",
+      image: "dumbbellhammercurl.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+    {
+      name: "Diamond Push Up",
+      image: "diamondpushup.gif",
+      sets: Array(3).fill(
+        {
+          target: 15,
+        }),
+      superset: true
+    },
+    {
+      name: "Zottman Curl",
+      image: "zottmancurl.gif",
+      info: "Palms should be facing downward as you lower the dumbbells, which builds forearm strength.",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+    {
+      name: "Dumbbell Skull Crusher",
+      image: "dumbbellskullcrusher.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+      superset: true
+    },
+    {
+      name: "Alternating Dumbbell Curl",
+      image: "alternatingdumbbellcurl.gif",
+      sets: [
+        {
+          target: 15,
+          weight: 5
+        },
+        {
+          target: 12,
+          weight: 5
+        },
+        {
+          target: 10,
+          weight: 5
+        },
+      ],
+    },
+  ]
+}
 
-Devvit.addMenuItem({
-  label: 'New Strong Lifts A',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, strongLiftsA)
-  },
-});
+export const menuWorkouts = [strongLiftsA, strongLiftsB, startingStretching, legsAndAbs, backAndShoulders, chestAndAbs, tricepsAndBiceps]
 
-Devvit.addMenuItem({
-  label: 'New Strong Lifts B',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, strongLiftsB)
-  },
-});
-
-Devvit.addMenuItem({
-  label: 'New Starting Stretching',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, startingStretching)
-  },
-});
-
-Devvit.addMenuItem({
-  label: 'New Supersets Workout',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (_event, context) => {
-    const { reddit, ui } = context;
-    const subreddit = await reddit.getCurrentSubreddit();
-    const post = await makeWorkitPost(context, supersetsWorkout)
-  },
-});
+for (let workout of menuWorkouts) {
+  Devvit.addMenuItem({
+    label: `New ${workout.title}`,
+    location: 'subreddit',
+    forUserType: 'moderator',
+    onPress: async (_event, context) => {
+      const { reddit, ui } = context;
+      const subreddit = await reddit.getCurrentSubreddit();
+      const post = await makeWorkitPost(context, workout)
+    },
+  });
+}
 
 var pinned = JSON.parse(JSON.stringify(loadingWorkout))
 pinned.title = "Work Out in Reddit!"

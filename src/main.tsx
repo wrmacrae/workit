@@ -4,7 +4,7 @@ import { Exercise, ExerciseSummary } from './components/exercise.js';
 import { ProgressBar } from './components/progressbar.js';
 import { Menu } from './components/menu.js';
 import { ExerciseData, WorkoutData, SetData, loadingWorkout, SettingsData, PostInfo } from './types.js';
-import { strongLiftsA, strongLiftsB, supersetsWorkout, squat } from './examples.js';
+import { strongLiftsA, strongLiftsB, legsAndAbs, squat, menuWorkouts } from './examples.js';
 import { Intro } from './components/intro.js';
 import { keyForExerciseCollection, keyForTemplate, keyForWorkout, keyForSettings, keyForExerciseToLastCompletion, keyForUsersByLastCompletion, keyForAllWorkouts } from './keys.js';
 import { PlateCalculator } from './components/platecalculator.js';
@@ -26,15 +26,62 @@ Devvit.configure({
   media: true,
 });
 
+var dailyWorkoutOptions = menuWorkouts.map(workout => ({ label: workout.title, value: JSON.stringify(workout) }))
+dailyWorkoutOptions.push({ label: "Rest Day (skip posting on this day)", value: JSON.stringify(loadingWorkout)})
+dailyWorkoutOptions.push({ label: "None (return to First Daily Workout, ignore remaining days)", value: ""})
+
 Devvit.addSettings([
   {
-    name: 'daily-workouts',
-    label: 'JSON List of Daily Workouts to Post',
-    type: 'paragraph',
+    name: 'daily-workout-0',
+    label: 'First Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-1',
+    label: 'Second Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-2',
+    label: 'Third Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-3',
+    label: 'Fourth Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-4',
+    label: 'Fifth Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-5',
+    label: 'Sixth Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-6',
+    label: 'Seventh Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
+    scope: 'installation',
+  }, {
+    name: 'daily-workout-7',
+    label: 'Eighth Daily Workout to automatically post',
+    type: 'select',
+    options: dailyWorkoutOptions,
     scope: 'installation',
   }, {
     name: 'daily-workout-start',
-    label: 'Milliseconds since epoch for first Daily Workout',
+    label: 'Milliseconds since epoch for first Daily Workout to post',
     type: 'number',
     scope: 'installation',
   }
@@ -49,8 +96,11 @@ function getDaysSince(startTime: number) {
 Devvit.addSchedulerJob({
   name: 'daily-exercise',
   onRun: async (event, context) => {
-    const workouts = JSON.parse(await context.settings.get('daily-workouts'))
-    const workout = workouts[getDaysSince(await context.settings.get('daily-workout-start')) % workouts.length]
+    const settings = await context.settings.getAll()
+    const dailyWorkoutStrings = Array(8).map((_, index) => settings[`daily-workout-${index}`])
+    dailyWorkoutStrings.splice(dailyWorkoutStrings.findIndex(string => string == ""))
+    const workouts = dailyWorkoutStrings.map(s => JSON.parse(String(s)))
+    const workout = workouts[getDaysSince(Number(settings['daily-workout-start'])) % workouts.length]
     workout.name = workout.name + ` (${(new Date(workout.complete ?? 0)).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -356,7 +406,7 @@ Devvit.addCustomPostType({
     const asyncExerciseCollectionResult = useAsync(async () => {
       addExercisesForUser(context, strongLiftsA)
       addExercisesForUser(context, strongLiftsB)
-      addExercisesForUser(context, supersetsWorkout)
+      addExercisesForUser(context, legsAndAbs)
       const rawData: Record<string, string> = await context.redis.hGetAll(keyForExerciseCollection(context.userId!));
       return Object.fromEntries(
         Object.entries(rawData).map(([key, value]) => [key, JSON.parse(value)])

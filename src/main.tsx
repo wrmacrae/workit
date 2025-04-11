@@ -341,26 +341,32 @@ Devvit.addCustomPostType({
     const [pendingTemplateUpdates, setPendingTemplateUpdates] = useState([])
     const [workouts, setWorkouts] = useState<{member: string; score: number;}[]>([])
     const [newPosts, setNewPosts] = useState<PostInfo[]>([])
+    const latestUpdate = pendingUpdates.slice(-1);
     var { error } = useAsync(async () => {
-      if (pendingUpdates.length > 0) {
-        const latestUpdate = pendingUpdates[pendingUpdates.length - 1];
-        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(latestUpdate));
+      if (latestUpdate.length) {
+        await context.redis.set(keyForWorkout(context.postId!, context.userId!), JSON.stringify(latestUpdate[0]));
+      }
+      return {}
+    }, {
+      depends: [latestUpdate],
+      finally: () => {
         setPendingUpdates([]);
       }
-    }, {
-      depends: [pendingUpdates],
     });
     if (error) {
       console.error('Failed to save workout to Redis:', error);
     }
+    const latestTemplateUpdate = pendingTemplateUpdates.slice(-1);
     ({ error } = useAsync(async () => {
-      if (pendingTemplateUpdates.length > 0) {
-        const latestUpdate = pendingTemplateUpdates[pendingTemplateUpdates.length - 1];
-        await context.redis.set(keyForTemplate(context.postId!), JSON.stringify(latestUpdate));
-        setPendingTemplateUpdates([]);
+      if (latestTemplateUpdate.length) {
+        await context.redis.set(keyForTemplate(context.postId!), JSON.stringify(latestTemplateUpdate[0]));
       }
+      return {}
     }, {
-      depends: [pendingUpdates],
+      depends: [pendingTemplateUpdates],
+      finally: () => {
+        setPendingTemplateUpdates([]);        
+      }
     }));
     if (error) {
       console.error('Failed to save workout to Redis:', error);
